@@ -20,7 +20,7 @@ pub fn main() anyerror!void {
     };
     const rot: f32 = 0;
     var add_rot: f32 = 30;
-    var count: f32 = 12;
+    var count: i32 = 12;
 
     while (!rl.windowShouldClose()) {
 
@@ -35,7 +35,7 @@ pub fn main() anyerror!void {
     }
 }
 
-fn drawBranch(start: rl.Vector2, len: f32, count: f32, rot: f32, add_rot: f32) void {
+fn drawBranch(start: rl.Vector2, len: f32, count: i32, rot: f32, add_rot: f32) void {
     var end = start;
     end.y -= len;
 
@@ -55,7 +55,7 @@ fn drawBranch(start: rl.Vector2, len: f32, count: f32, rot: f32, add_rot: f32) v
     }
 }
 
-fn renderUI(add_rot: *f32, count: *f32) void {
+fn renderUI(add_rot: *f32, count: *i32) void {
     _ = rg.sliderBar(
         rl.Rectangle{
             .x = 50,
@@ -65,11 +65,13 @@ fn renderUI(add_rot: *f32, count: *f32) void {
         },
 
         "Rotation",
-        rl.textFormat("%.2", .{add_rot}),
+        rl.textFormat("%02.02f", .{add_rot.*}),
         &add_rot.*,
         0,
-        90,
+        180,
     );
+
+    var fcount: f32 = @as(f32, @floatFromInt(count.*));
 
     _ = rg.sliderBar(
         rl.Rectangle{
@@ -80,9 +82,11 @@ fn renderUI(add_rot: *f32, count: *f32) void {
         },
 
         "Count",
-        rl.textFormat("%.2", .{count}),
-        &count.*,
-        0,
+        rl.textFormat("%02.00f", .{fcount}),
+        &fcount,
+        1,
         20,
     );
+
+    count.* = @intFromFloat(fcount);
 }
