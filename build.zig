@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const sketches = [_][]const u8{"rain"};
+const sketches = [_][]const u8{ "rain", "fractal-tree" };
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
@@ -14,6 +14,8 @@ pub fn build(b: *std.Build) void {
     const raylib = raylib_dep.module("raylib");
     const raygui = raylib_dep.module("raygui");
     const raylib_artifact = raylib_dep.artifact("raylib");
+
+    const check = b.step("check", "Check if it compiles");
 
     for (sketches) |name| {
         const exe = b.addExecutable(.{
@@ -39,7 +41,6 @@ pub fn build(b: *std.Build) void {
         const run_step = b.step(name, b.fmt("Run {s}", .{name}));
         run_step.dependOn(&run_cmd.step);
 
-        const check = b.step("check", "Check if it compiles");
         check.dependOn(&exe.step);
     }
 }

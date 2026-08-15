@@ -4,7 +4,7 @@ const rl = @import("raylib");
 const screenWidth = 800;
 const screenHeight = 600;
 const bg_color = rl.Color{ .a = 255, .r = 25, .g = 23, .b = 36 };
-const rain_color = rl.Color{ .a = 155, .r = 144, .g = 140, .b = 170 };
+const rain_color = rl.Color{ .a = 255, .r = 144, .g = 140, .b = 170 };
 
 const Drop = struct {
     x: f32,
