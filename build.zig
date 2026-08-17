@@ -1,6 +1,10 @@
 const std = @import("std");
 
-const sketches = [_][]const u8{ "rain", "fractal-tree" };
+const sketches = [_][]const u8{
+    "rain",
+    "fractal-tree",
+    "flocking",
+};
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
