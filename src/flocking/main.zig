@@ -1,16 +1,22 @@
 const std = @import("std");
 const rl = @import("raylib");
 
-const screenWidth = 800;
-const screenHeight = 600;
-const bg_color = rl.Color{ .a = 255, .r = 25, .g = 23, .b = 36 };
-const boid_color = rl.Color{ .a = 255, .r = 144, .g = 140, .b = 170 };
+const SCREEN_WIDTH = 800;
+const SCREEN_HEIGHT = 600;
+const BG_COLOR = rl.Color{ .a = 255, .r = 25, .g = 23, .b = 36 };
+const BOID_COLOR = rl.Color{ .a = 255, .r = 144, .g = 140, .b = 170 };
+
+const FLOCK_SIZE = 200;
+const PERCEPTION = 50;
 
 const Boid = struct {
+    id: u16,
     pos: rl.Vector2,
     vel: rl.Vector2,
+    accel: rl.Vector2,
+    perception: f32,
 
-    pub fn init(rand: std.Random) Boid {
+    pub fn init(id: usize, rand: std.Random) Boid {
         var vel = rl.Vector2{
             .x = rand.float(f32),
             .y = rand.float(f32),
@@ -19,12 +25,61 @@ const Boid = struct {
         vel = vel.normalize();
 
         return Boid{
+            .id = @intCast(id),
             .pos = rl.Vector2{
-                .x = rand.float(f32) * screenWidth,
-                .y = rand.float(f32) * screenHeight,
+                .x = rand.float(f32) * SCREEN_WIDTH,
+                .y = rand.float(f32) * SCREEN_HEIGHT,
             },
             .vel = vel,
+            .accel = rl.Vector2.zero(),
+            .perception = PERCEPTION,
         };
+    }
+
+    pub fn alignment(self: *Boid, flock: []const Boid) void {
+        var wish_vel = rl.Vector2.zero();
+        var boid_count: u16 = 0;
+
+        for (flock) |*boid| {
+            if (self.id != boid.id) {
+                const dist = self.pos.subtract(boid.pos).length();
+
+                if (dist < self.perception) {
+                    boid_count += 1;
+                    wish_vel = wish_vel.add(boid.vel);
+                }
+            }
+        }
+
+        if (boid_count == 0) {
+            return;
+        }
+
+        wish_vel.x = wish_vel.x / boid_count;
+        wish_vel.y = wish_vel.y / boid_count;
+
+        self.*.accel = wish_vel.subtract(self.vel);
+
+        self.*.accel.x = self.accel.x / 100;
+        self.*.accel.y = self.accel.y / 100;
+    }
+
+    pub fn move(self: *Boid) void {
+        self.vel = self.vel.add(self.accel);
+
+        self.pos = self.pos.add(self.vel);
+
+        if (self.pos.x > SCREEN_WIDTH) {
+            self.pos.x = 0;
+        } else if (self.pos.x < 0) {
+            self.pos.x = SCREEN_WIDTH;
+        }
+
+        if (self.pos.y > SCREEN_HEIGHT) {
+            self.pos.y = 0;
+        } else if (self.pos.x < 0) {
+            self.pos.x = SCREEN_HEIGHT;
+        }
     }
 
     pub fn draw(self: Boid) void {
@@ -39,32 +94,12 @@ const Boid = struct {
         p2 = p2.rotate(rot).add(self.pos);
         p3 = p3.rotate(rot).add(self.pos);
 
-        rl.drawTriangle(p1, p2, p3, boid_color);
+        rl.drawTriangle(p1, p2, p3, BOID_COLOR);
 
-        // rl.drawCircleV(self.pos, 5.0, boid_color);
+        rl.drawLineV(self.pos, self.pos.add(self.vel.scale(50)), BOID_COLOR);
 
-        rl.drawLineV(
-            self.pos,
-            self.pos.add(self.vel.normalize().scale(50)),
-            boid_color,
-        );
-    }
-
-    pub fn move(self: *Boid, rand: std.Random) void {
-        _ = rand;
-
-        self.pos = self.pos.add(self.vel);
-
-        if (self.pos.x > screenWidth) {
-            self.pos.x = 0;
-        } else if (self.pos.x < 0) {
-            self.pos.x = screenWidth;
-        }
-
-        if (self.pos.y > screenHeight) {
-            self.pos.y = 0;
-        } else if (self.pos.x < 0) {
-            self.pos.x = screenHeight;
+        if (self.id == 0) {
+            rl.drawCircleLinesV(self.pos, self.perception, rl.Color.white.alpha(0.5));
         }
     }
 };
@@ -74,27 +109,28 @@ pub fn main(init: std.process.Init) anyerror!void {
     const rng_impl: std.Random.IoSource = .{ .io = io };
     const rand = rng_impl.interface();
 
-    rl.initWindow(screenWidth, screenHeight, "rain");
+    rl.initWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "rain");
     defer rl.closeWindow();
     rl.setTargetFPS(60);
 
-    var flock: [50]Boid = undefined;
+    var flock: [FLOCK_SIZE]Boid = undefined;
 
-    for (&flock) |*single| {
-        single.* = Boid.init(rand);
+    for (&flock, 0..) |*single, i| {
+        single.* = Boid.init(i, rand);
     }
 
     while (!rl.windowShouldClose()) {
         for (&flock) |*single| {
-            single.*.move(rand);
+            single.*.move();
         }
 
         // Draw
         rl.beginDrawing();
         defer rl.endDrawing();
-        rl.clearBackground(bg_color);
+        rl.clearBackground(BG_COLOR);
 
         for (&flock) |*single| {
+            single.*.alignment(&flock);
             single.*.draw();
         }
     }
