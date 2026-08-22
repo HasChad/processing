@@ -7,9 +7,28 @@ const BG_COLOR = rl.Color{ .a = 255, .r = 25, .g = 23, .b = 36 };
 const BOID_COLOR = rl.Color{ .a = 255, .r = 144, .g = 140, .b = 170 };
 
 const FLOCK_SIZE = 100;
+const WALL_SIZE = 10;
+
 const PERCEPTION = 50;
 const MAX_SPEED = 3;
-const MAX_ACCEL = 0.1;
+const MAX_ACCEL = 0.15;
+
+const Wall = struct {
+    pos: rl.Vector2,
+
+    pub fn init(rand: std.Random) Wall {
+        return Wall{
+            .pos = rl.Vector2{
+                .x = rand.float(f32) * SCREEN_WIDTH,
+                .y = rand.float(f32) * SCREEN_HEIGHT,
+            },
+        };
+    }
+
+    pub fn draw(self: Wall) void {
+        rl.drawCircleV(self.pos, 5.0, rl.Color.red);
+    }
+};
 
 const Boid = struct {
     id: u16,
@@ -89,7 +108,7 @@ const Boid = struct {
     pub fn seperation(self: *Boid, flock: []const Boid) void {
         var wish_dir = rl.Vector2.zero();
         var boid_count: f32 = 0;
-        const strength = 0.072;
+        const strength = 0.08;
 
         for (flock) |*boid| {
             if (self.id != boid.id) {
@@ -128,6 +147,35 @@ const Boid = struct {
 
             self.*.accel = self.*.accel.add(wish_dir);
             rl.drawCircleV(rl.getMousePosition(), 5, rl.Color.white);
+        }
+    }
+
+    pub fn check_wall(self: *Boid, walls: []const Wall) void {
+        var wish_dir = rl.Vector2.zero();
+        var wall_count: f32 = 0;
+        const strength = 0.2;
+
+        for (walls) |*wall| {
+            const dist = self.pos.subtract(wall.pos).length();
+
+            if (dist < self.perception) {
+                wall_count += 1;
+
+                var diff = self.pos.subtract(wall.pos);
+
+                if (dist != 0.0) {
+                    diff = diff.scale(PERCEPTION / dist);
+                }
+
+                wish_dir = wish_dir.add(diff);
+            }
+        }
+
+        if (wall_count > 0) {
+            wish_dir = wish_dir.scale(1.0 / wall_count);
+            const wish_vel = wish_dir.scale(strength);
+
+            self.*.accel = self.*.accel.add(wish_vel);
         }
     }
 
@@ -201,6 +249,12 @@ pub fn main(init: std.process.Init) anyerror!void {
         single.* = Boid.init(i, rand);
     }
 
+    var walls: [WALL_SIZE]Wall = undefined;
+
+    for (&walls) |*wall| {
+        wall.* = Wall.init(rand);
+    }
+
     while (!rl.windowShouldClose()) {
         rl.beginDrawing();
         defer rl.endDrawing();
@@ -210,9 +264,14 @@ pub fn main(init: std.process.Init) anyerror!void {
             boid.*.alignment(&flock);
             boid.*.seperation(&flock);
             boid.*.cohesion(&flock);
+            boid.*.check_wall(&walls);
             boid.*.focus();
             boid.*.move();
             boid.*.draw();
+        }
+
+        for (&walls) |*wall| {
+            wall.*.draw();
         }
     }
 }
