@@ -1,14 +1,15 @@
 const std = @import("std");
 const rl = @import("raylib");
 
-const SCREEN_WIDTH = 1500;
-const SCREEN_HEIGHT = 1000;
+const SCREEN_WIDTH = 800;
+const SCREEN_HEIGHT = 600;
 const BG_COLOR = rl.Color{ .a = 255, .r = 25, .g = 23, .b = 36 };
 const BOID_COLOR = rl.Color{ .a = 255, .r = 144, .g = 140, .b = 170 };
 
-const FLOCK_SIZE = 200;
-const PERCEPTION = 100;
+const FLOCK_SIZE = 100;
+const PERCEPTION = 50;
 const MAX_SPEED = 3;
+const MAX_ACCEL = 0.1;
 
 const Boid = struct {
     id: u16,
@@ -40,7 +41,7 @@ const Boid = struct {
     pub fn alignment(self: *Boid, flock: []const Boid) void {
         var wish_dir = rl.Vector2.zero();
         var boid_count: f32 = 0;
-        const strength = 0.05;
+        const strength = 0.2;
 
         for (flock) |*boid| {
             if (self.id != boid.id) {
@@ -99,7 +100,9 @@ const Boid = struct {
 
                     var diff = self.pos.subtract(boid.pos);
 
-                    diff = diff.scale(PERCEPTION / dist);
+                    if (dist != 0.0) {
+                        diff = diff.scale(PERCEPTION / dist);
+                    }
 
                     wish_dir = wish_dir.add(diff);
                 }
@@ -108,7 +111,7 @@ const Boid = struct {
 
         if (boid_count > 0) {
             wish_dir = wish_dir.scale(1.0 / boid_count);
-            const wish_vel = wish_dir.subtract(self.vel).scale(strength);
+            const wish_vel = wish_dir.scale(strength);
 
             self.*.accel = self.*.accel.add(wish_vel);
         }
@@ -120,19 +123,30 @@ const Boid = struct {
 
         if (rl.isMouseButtonDown(rl.MouseButton.left)) {
             wish_dir = rl.getMousePosition().subtract(self.pos);
+
+            wish_dir = wish_dir.normalize().scale(strength);
+
+            self.*.accel = self.*.accel.add(wish_dir);
+            rl.drawCircleV(rl.getMousePosition(), 5, rl.Color.white);
         }
-
-        wish_dir = wish_dir.normalize().scale(strength);
-
-        self.*.accel = self.*.accel.add(wish_dir);
-        rl.drawCircleV(rl.getMousePosition(), 5, rl.Color.white);
     }
 
     pub fn move(self: *Boid) void {
+        self.accel = self.accel.clampValue(0.0, MAX_ACCEL);
+
         self.vel = self.vel.add(self.accel);
 
-        // self.vel = self.vel.clampValue(0.0, MAX_SPEED);
-        self.vel = self.vel.normalize().scale(MAX_SPEED);
+        if (self.vel.length() < MAX_SPEED) {
+            const new_speed = @min(self.vel.length() + MAX_ACCEL / 2.0, MAX_SPEED);
+            self.vel = self.vel.normalize().scale(new_speed);
+        } else {
+            self.vel = self.vel.normalize().scale(MAX_SPEED);
+        }
+
+        if (self.id == 0) {
+            rl.drawText(rl.textFormat("Speed: %.4f", .{self.vel.length()}), 5, 5, 20, .white);
+            rl.drawText(rl.textFormat("Accel: %.4f", .{self.accel.length()}), 5, 30, 20, .white);
+        }
 
         self.pos = self.pos.add(self.vel);
 
@@ -193,8 +207,8 @@ pub fn main(init: std.process.Init) anyerror!void {
         rl.clearBackground(BG_COLOR);
 
         for (&flock) |*boid| {
-            boid.*.seperation(&flock);
             boid.*.alignment(&flock);
+            boid.*.seperation(&flock);
             boid.*.cohesion(&flock);
             boid.*.focus();
             boid.*.move();
