@@ -88,7 +88,7 @@ const Boid = struct {
     pub fn seperation(self: *Boid, flock: []const Boid) void {
         var wish_dir = rl.Vector2.zero();
         var boid_count: f32 = 0;
-        const strength = 0.075;
+        const strength = 0.072;
 
         for (flock) |*boid| {
             if (self.id != boid.id) {
@@ -108,7 +108,7 @@ const Boid = struct {
 
         if (boid_count > 0) {
             wish_dir = wish_dir.scale(1.0 / boid_count);
-            const wish_vel = wish_dir.scale(strength);
+            const wish_vel = wish_dir.subtract(self.vel).scale(strength);
 
             self.*.accel = self.*.accel.add(wish_vel);
         }
