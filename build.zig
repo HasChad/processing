@@ -4,6 +4,7 @@ const sketches = [_][]const u8{
     "rain",
     "fractal-tree",
     "flocking",
+    "verlet-physics",
 };
 
 pub fn build(b: *std.Build) void {
@@ -36,7 +37,6 @@ pub fn build(b: *std.Build) void {
         exe.root_module.addImport("raygui", raygui);
         b.installArtifact(exe);
 
-        exe.use_lld = true;
         exe.use_llvm = true;
 
         const run_cmd = b.addRunArtifact(exe);
