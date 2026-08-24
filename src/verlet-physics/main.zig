@@ -88,7 +88,7 @@ pub fn main(init: std.process.Init) anyerror!void {
 
             if (dist > radius - 50.0) {
                 const n = to_obj.scale(1 / dist);
-                ball.*.current_pos = positon.add(n.scale(dist - 50.0));
+                ball.*.current_pos = positon.add(n.scale(radius - 50.0));
             }
         }
 
