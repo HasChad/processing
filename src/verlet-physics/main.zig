@@ -17,19 +17,15 @@ const Ball = struct {
     old_pos: rl.Vector2,
     accel: rl.Vector2,
     radius: f32,
+    color: rl.Color,
 
-    pub fn init(pos: rl.Vector2) Ball {
+    pub fn init(pos: rl.Vector2, color: rl.Color) Ball {
         const current_pos = rl.Vector2.init(pos.x, pos.y + 3);
 
-        return Ball{
-            .current_pos = current_pos,
-            .old_pos = pos,
-            .accel = rl.Vector2.zero(),
-            .radius = 5.0,
-        };
+        return Ball{ .current_pos = current_pos, .old_pos = pos, .accel = rl.Vector2.zero(), .radius = 5.0, .color = color };
     }
 
-    pub fn initRandom(pos: rl.Vector2, rand: std.Random) Ball {
+    pub fn initRandom(pos: rl.Vector2, color: rl.Color, rand: std.Random) Ball {
         const current_pos = rl.Vector2.init(pos.x, pos.y + 5);
 
         return Ball{
@@ -37,6 +33,19 @@ const Ball = struct {
             .old_pos = pos,
             .accel = rl.Vector2.zero(),
             .radius = rand.float(f32) * 7 + 3,
+            .color = color,
+        };
+    }
+
+    pub fn initSpeed(pos: rl.Vector2, vec: rl.Vector2, color: rl.Color, rand: std.Random) Ball {
+        const current_pos = pos.add(vec);
+
+        return Ball{
+            .current_pos = current_pos,
+            .old_pos = pos,
+            .accel = rl.Vector2.zero(),
+            .radius = rand.float(f32) * 7 + 3,
+            .color = color,
         };
     }
 
@@ -55,7 +64,7 @@ const Ball = struct {
     }
 
     pub fn draw(self: Ball) void {
-        rl.drawCircleV(self.current_pos, self.radius, BALL_COLOR);
+        rl.drawCircleV(self.current_pos, self.radius, self.color);
     }
 
     pub fn move(self: *Ball) void {
@@ -67,7 +76,6 @@ pub fn main(init: std.process.Init) anyerror!void {
     const io = init.io;
     const rng_impl: std.Random.IoSource = .{ .io = io };
     const rand = rng_impl.interface();
-    _ = rand;
 
     var gpa = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer _ = gpa.deinit();
@@ -77,6 +85,7 @@ pub fn main(init: std.process.Init) anyerror!void {
     defer rl.closeWindow();
     rl.setTargetFPS(60);
 
+    var enableShooter = false;
     var balls = try std.ArrayList(Ball).initCapacity(allocator, 100);
 
     const position = rl.Vector2{
@@ -86,12 +95,35 @@ pub fn main(init: std.process.Init) anyerror!void {
     const radius = 300.0;
 
     while (!rl.windowShouldClose()) {
+        if (rl.isKeyPressed(rl.KeyboardKey.space)) {
+            enableShooter = !enableShooter;
+        }
+
+        const shooter_time: f32 = @floatCast(rl.getTime());
+        if (enableShooter) {
+            const max_angle = std.math.pi / 4.0; // 45 swing each side
+            const swing_speed = 2.0;
+            const angle = std.math.sin(shooter_time * swing_speed) * max_angle;
+
+            // angle = 0 -> straight down. Rotate around that.
+            const dir = rl.Vector2.init(@sin(angle), @cos(angle));
+            const speed = 2.5;
+            const vec = dir.scale(speed);
+
+            try balls.append(allocator, Ball.initSpeed(
+                rl.Vector2.init(SCREEN_WIDTH / 2, 50),
+                vec,
+                getRainbow(shooter_time),
+                rand,
+            ));
+        }
+
         if (rl.isMouseButtonPressed(rl.MouseButton.left)) {
-            try balls.append(allocator, Ball.init(rl.getMousePosition()));
+            try balls.append(allocator, Ball.init(rl.getMousePosition(), BALL_COLOR));
         }
 
         if (rl.isMouseButtonDown(rl.MouseButton.right)) {
-            try balls.append(allocator, Ball.init(rl.getMousePosition()));
+            try balls.append(allocator, Ball.init(rl.getMousePosition(), BALL_COLOR));
         }
 
         update(balls.items, rl.getFrameTime());
@@ -170,4 +202,17 @@ fn solveCollisions(balls: []Ball) void {
             }
         }
     }
+}
+
+fn getRainbow(dt: f32) rl.Color {
+    const r = std.math.sin(dt);
+    const g = std.math.sin(dt + 0.33 * 2.0 * std.math.pi);
+    const b = std.math.sin(dt + 0.66 * 2.0 * std.math.pi);
+
+    return rl.Color.init(
+        @intFromFloat(r * r * 255),
+        @intFromFloat(g * g * 255),
+        @intFromFloat(b * b * 255),
+        255,
+    );
 }

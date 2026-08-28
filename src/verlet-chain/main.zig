@@ -18,8 +18,9 @@ const Ball = struct {
     accel: rl.Vector2,
     radius: f32,
     pinned: bool,
+    color: rl.Color,
 
-    pub fn init(pos: rl.Vector2) Ball {
+    pub fn init(pos: rl.Vector2, color: rl.Color) Ball {
         const current_pos = rl.Vector2.init(pos.x, pos.y);
 
         return Ball{
@@ -28,10 +29,11 @@ const Ball = struct {
             .accel = rl.Vector2.zero(),
             .radius = 10.0,
             .pinned = false,
+            .color = color,
         };
     }
 
-    pub fn initRandom(pos: rl.Vector2, rand: std.Random) Ball {
+    pub fn initRandom(pos: rl.Vector2, color: rl.Color, rand: std.Random) Ball {
         const current_pos = rl.Vector2.init(pos.x, pos.y + 5);
 
         return Ball{
@@ -40,6 +42,20 @@ const Ball = struct {
             .accel = rl.Vector2.zero(),
             .radius = rand.float(f32) * 7 + 3,
             .pinned = false,
+            .color = color,
+        };
+    }
+
+    pub fn initSpeed(pos: rl.Vector2, vec: rl.Vector2, color: rl.Color, rand: std.Random) Ball {
+        const current_pos = pos.add(vec);
+
+        return Ball{
+            .current_pos = current_pos,
+            .old_pos = pos,
+            .accel = rl.Vector2.zero(),
+            .radius = rand.float(f32) * 7 + 3,
+            .pinned = false,
+            .color = color,
         };
     }
 
@@ -64,7 +80,7 @@ const Ball = struct {
     }
 
     pub fn draw(self: Ball) void {
-        rl.drawCircleV(self.current_pos, self.radius, BALL_COLOR);
+        rl.drawCircleV(self.current_pos, self.radius, self.color);
     }
 
     pub fn move(self: *Ball) void {
@@ -103,7 +119,6 @@ pub fn main(init: std.process.Init) anyerror!void {
     const io = init.io;
     const rng_impl: std.Random.IoSource = .{ .io = io };
     const rand = rng_impl.interface();
-    _ = rand;
 
     var gpa = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer _ = gpa.deinit();
@@ -112,19 +127,20 @@ pub fn main(init: std.process.Init) anyerror!void {
     rl.initWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "verlet-chain");
     defer rl.closeWindow();
     rl.setTargetFPS(60);
+    var enableShooter = false;
 
     var balls = try std.ArrayList(Ball).initCapacity(allocator, 100);
-    for (0..30) |i| {
+    for (0..31) |i| {
         const f: f32 = @floatFromInt(i);
 
-        try balls.append(allocator, Ball.init(rl.Vector2.init(f * 20 + 100, 500)));
+        try balls.append(allocator, Ball.init(rl.Vector2.init(f * 20 + 100, 500), .white));
     }
 
     balls.items[0].pinned = true;
     balls.items[balls.items.len - 1].pinned = true;
 
     var links = try std.ArrayList(Link).initCapacity(allocator, 100);
-    for (0..29) |i| {
+    for (0..30) |i| {
         try links.append(allocator, Link{
             .ball_1 = i,
             .ball_2 = i + 1,
@@ -133,14 +149,38 @@ pub fn main(init: std.process.Init) anyerror!void {
     }
 
     while (!rl.windowShouldClose()) {
+        if (rl.isKeyPressed(rl.KeyboardKey.space)) {
+            enableShooter = !enableShooter;
+        }
+
+        const shooter_time: f32 = @floatCast(rl.getTime());
+        if (enableShooter) {
+            const max_angle = std.math.pi / 6.0; // 30 swing each side
+            const swing_speed = 2.0;
+            const angle = std.math.sin(shooter_time * swing_speed) * max_angle;
+
+            // angle = 0 -> straight down. Rotate around that.
+            const dir = rl.Vector2.init(@sin(angle), @cos(angle));
+            const speed = 2.5;
+            const vec = dir.scale(speed);
+
+            try balls.append(allocator, Ball.initSpeed(
+                rl.Vector2.init(SCREEN_WIDTH / 2, 50),
+                vec,
+                getRainbow(shooter_time),
+                rand,
+            ));
+        }
+
         if (rl.isMouseButtonPressed(rl.MouseButton.left)) {
-            try balls.append(allocator, Ball.init(rl.getMousePosition()));
+            try balls.append(allocator, Ball.init(rl.getMousePosition(), BALL_COLOR));
         }
 
         if (rl.isMouseButtonDown(rl.MouseButton.right)) {
-            try balls.append(allocator, Ball.init(rl.getMousePosition()));
+            try balls.append(allocator, Ball.init(rl.getMousePosition(), BALL_COLOR));
         }
 
+        removeOffscreen(&balls);
         update(balls.items, links.items, rl.getFrameTime());
 
         // Draw
@@ -153,7 +193,7 @@ pub fn main(init: std.process.Init) anyerror!void {
             single.*.draw();
         }
 
-        rl.drawText(rl.textFormat("%i FPS", .{rl.getFPS()}), 5, 5, 20, .white);
+        rl.drawText(rl.textFormat("%i FPS", .{rl.getFPS()}), 5, 5, 20, BALL_COLOR);
         rl.drawText(rl.textFormat("BALLS: %i", .{balls.items.len}), 5, 25, 20, .white);
     }
 }
@@ -164,7 +204,6 @@ fn update(balls: []Ball, links: []Link, dt: f32) void {
 
     for (0..sub_steps) |_| {
         applyGravity(balls);
-        // applyConstraints(balls, position, radius); // apply constraint in circle
         solveCollisions(balls);
         for (links) |link| {
             link.apply(balls);
@@ -207,9 +246,46 @@ fn solveCollisions(balls: []Ball) void {
             if (dist < min_dist and dist != 0.0) {
                 const n = collision_axis.scale(1 / dist);
                 const delta = min_dist - dist;
-                obj_1.current_pos = obj_1.current_pos.add(n.scale(0.5 * delta));
-                obj_2.current_pos = obj_2.current_pos.subtract(n.scale(0.5 * delta));
+
+                if (obj_1.pinned and obj_2.pinned) {
+                    continue;
+                } else if (obj_1.pinned) {
+                    obj_2.current_pos = obj_2.current_pos.subtract(n.scale(delta));
+                } else if (obj_2.pinned) {
+                    obj_1.current_pos = obj_1.current_pos.add(n.scale(delta));
+                } else {
+                    obj_1.current_pos = obj_1.current_pos.add(n.scale(0.5 * delta));
+                    obj_2.current_pos = obj_2.current_pos.subtract(n.scale(0.5 * delta));
+                }
             }
         }
     }
+}
+
+fn removeOffscreen(balls: *std.ArrayList(Ball)) void {
+    var i: usize = balls.items.len;
+    while (i > 0) {
+        i -= 1;
+        const b = balls.items[i];
+        if (b.current_pos.y > SCREEN_HEIGHT + 100 or
+            b.current_pos.y < -100 or
+            b.current_pos.x < -100 or
+            b.current_pos.x > SCREEN_WIDTH + 100)
+        {
+            _ = balls.swapRemove(i);
+        }
+    }
+}
+
+fn getRainbow(dt: f32) rl.Color {
+    const r = std.math.sin(dt);
+    const g = std.math.sin(dt + 0.33 * 2.0 * std.math.pi);
+    const b = std.math.sin(dt + 0.66 * 2.0 * std.math.pi);
+
+    return rl.Color.init(
+        @intFromFloat(r * r * 255),
+        @intFromFloat(g * g * 255),
+        @intFromFloat(b * b * 255),
+        255,
+    );
 }
