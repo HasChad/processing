@@ -32,6 +32,8 @@ pub fn main() anyerror!void {
 
         drawBranch(origin, 100, count, rot, add_rot);
         renderUI(&add_rot, &count);
+
+        rl.drawText(rl.textFormat("%i FPS", .{rl.getFPS()}), SCREEN_WIDTH - 80, 5, 20, .white);
     }
 }
 

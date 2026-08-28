@@ -53,15 +53,15 @@ pub fn main(init: std.process.Init) anyerror!void {
     defer rl.closeWindow();
     rl.setTargetFPS(60);
 
-    var drop: [RAIN_COUNT]Drop = undefined;
+    var rain: [RAIN_COUNT]Drop = undefined;
 
-    for (&drop) |*single| {
-        single.* = Drop.init(rand);
+    for (&rain) |*drop| {
+        drop.* = Drop.init(rand);
     }
 
     while (!rl.windowShouldClose()) {
-        for (&drop) |*single| {
-            single.*.move(rand);
+        for (&rain) |*drop| {
+            drop.*.move(rand);
         }
 
         // Draw
@@ -70,8 +70,10 @@ pub fn main(init: std.process.Init) anyerror!void {
 
         rl.clearBackground(BG_COLOR);
 
-        for (&drop) |*single| {
-            single.*.draw();
+        for (&rain) |*drop| {
+            drop.*.draw();
         }
+
+        rl.drawText(rl.textFormat("%i FPS", .{rl.getFPS()}), 5, 5, 20, .white);
     }
 }
