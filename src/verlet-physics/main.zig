@@ -19,11 +19,24 @@ const Ball = struct {
     radius: f32,
 
     pub fn init(pos: rl.Vector2) Ball {
+        const current_pos = rl.Vector2.init(pos.x, pos.y + 3);
+
         return Ball{
-            .current_pos = pos,
+            .current_pos = current_pos,
             .old_pos = pos,
             .accel = rl.Vector2.zero(),
-            .radius = 10.0,
+            .radius = 5.0,
+        };
+    }
+
+    pub fn initRandom(pos: rl.Vector2, rand: std.Random) Ball {
+        const current_pos = rl.Vector2.init(pos.x, pos.y + 5);
+
+        return Ball{
+            .current_pos = current_pos,
+            .old_pos = pos,
+            .accel = rl.Vector2.zero(),
+            .radius = rand.float(f32) * 7 + 3,
         };
     }
 
@@ -64,7 +77,6 @@ pub fn main(init: std.process.Init) anyerror!void {
     defer rl.closeWindow();
     rl.setTargetFPS(60);
 
-    // var balls: [BALL_COUNT]Ball = undefined;
     var balls = try std.ArrayList(Ball).initCapacity(allocator, 100);
 
     const position = rl.Vector2{
@@ -75,6 +87,10 @@ pub fn main(init: std.process.Init) anyerror!void {
 
     while (!rl.windowShouldClose()) {
         if (rl.isMouseButtonPressed(rl.MouseButton.left)) {
+            try balls.append(allocator, Ball.init(rl.getMousePosition()));
+        }
+
+        if (rl.isMouseButtonDown(rl.MouseButton.right)) {
             try balls.append(allocator, Ball.init(rl.getMousePosition()));
         }
 
@@ -138,22 +154,6 @@ fn applyConstraints(balls: []Ball, position: rl.Vector2, radius: f32) void {
         }
     }
 }
-
-// fn solveCollisions(balls: []Ball) void {
-//     for (balls) |*obj_1| {
-//         for (balls) |*obj_2| {
-//             const collision_axis = obj_1.current_pos.subtract(obj_2.current_pos);
-//             const dist = collision_axis.length();
-//             const min_dist = obj_1.radius + obj_2.radius;
-
-//             if (dist < min_dist and dist != 0.0) {
-//                 const n = collision_axis.scale(1 / dist);
-//                 const delta = min_dist - dist;
-//                 obj_1.*.current_pos = obj_1.*.current_pos.add(n.scale(0.5 * delta));
-//             }
-//         }
-//     }
-// }
 
 fn solveCollisions(balls: []Ball) void {
     for (balls, 0..) |*obj_1, i| {

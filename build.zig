@@ -5,6 +5,7 @@ const sketches = [_][]const u8{
     "fractal-tree",
     "flocking",
     "verlet-physics",
+    "verlet-chain",
 };
 
 pub fn build(b: *std.Build) void {
