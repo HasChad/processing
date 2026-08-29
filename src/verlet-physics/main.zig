@@ -22,7 +22,13 @@ const Ball = struct {
     pub fn init(pos: rl.Vector2, color: rl.Color) Ball {
         const current_pos = rl.Vector2.init(pos.x, pos.y + 3);
 
-        return Ball{ .current_pos = current_pos, .old_pos = pos, .accel = rl.Vector2.zero(), .radius = 5.0, .color = color };
+        return Ball{
+            .current_pos = current_pos,
+            .old_pos = pos,
+            .accel = rl.Vector2.zero(),
+            .radius = 5.0,
+            .color = color,
+        };
     }
 
     pub fn initRandom(pos: rl.Vector2, color: rl.Color, rand: std.Random) Ball {
