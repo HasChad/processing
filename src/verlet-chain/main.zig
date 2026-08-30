@@ -264,8 +264,7 @@ fn solveCollisions(balls: []Ball) void {
 
 fn removeOffscreen(balls: *std.ArrayList(Ball)) void {
     var i: usize = balls.items.len;
-    while (i > 0) {
-        i -= 1;
+    while (i > 0) : (i -= 1) {
         const b = balls.items[i];
         if (b.current_pos.y > SCREEN_HEIGHT + 100 or
             b.current_pos.y < -100 or
