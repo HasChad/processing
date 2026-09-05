@@ -4,8 +4,8 @@ const rg = @import("raygui");
 
 const SCREEN_WIDTH = 800;
 const SCREEN_HEIGHT = 600;
-const BG_COLOR = rl.Color{ .a = 255, .r = 25, .g = 23, .b = 36 };
-const BRANCH_COLOR = rl.Color{ .a = 255, .r = 224, .g = 222, .b = 244 };
+const BG_COLOR = rl.Color{ .r = 25, .g = 23, .b = 36, .a = 255 };
+const BRANCH_COLOR = rl.Color{ .r = 224, .g = 222, .b = 244, .a = 255 };
 
 const LEN_MUL = 0.82;
 

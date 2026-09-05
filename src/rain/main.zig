@@ -3,8 +3,8 @@ const rl = @import("raylib");
 
 const SCREEN_WIDTH = 800;
 const SCREEN_HEIGHT = 600;
-const BG_COLOR = rl.Color{ .a = 255, .r = 25, .g = 23, .b = 36 };
-const RAIN_COLOR = rl.Color{ .a = 255, .r = 144, .g = 140, .b = 170 };
+const BG_COLOR = rl.Color{ .r = 25, .g = 23, .b = 36, .a = 255 };
+const RAIN_COLOR = rl.Color{ .r = 144, .g = 140, .b = 170, .a = 255 };
 const RAIN_COUNT = 200;
 
 const Drop = struct {
