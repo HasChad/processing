@@ -1,10 +1,7 @@
 const std = @import("std");
 const rl = @import("raylib");
+const c = @import("common.zig");
 
-const SCREEN_WIDTH = 800;
-const SCREEN_HEIGHT = 600;
-const BG_COLOR = rl.Color{ .r = 25, .g = 23, .b = 36, .a = 255 };
-const RAIN_COLOR = rl.Color{ .r = 144, .g = 140, .b = 170, .a = 255 };
 const RAIN_COUNT = 200;
 
 const Drop = struct {
@@ -14,14 +11,14 @@ const Drop = struct {
 
     pub fn init(rand: std.Random) Drop {
         return Drop{
-            .x = rand.float(f32) * SCREEN_WIDTH,
+            .x = rand.float(f32) * c.SCREEN_WIDTH,
             .y = rand.float(f32) * 500 - 700,
             .vy = rand.float(f32) * 1000 + 500,
         };
     }
 
     pub fn draw(self: Drop) void {
-        var color = RAIN_COLOR;
+        var color = c.rosepine.subtle;
 
         const alpha_f = (self.vy / 1500.0) * 255;
         color.a = @intFromFloat(alpha_f);
@@ -38,28 +35,20 @@ const Drop = struct {
     pub fn move(self: *Drop, rand: std.Random) void {
         self.y += self.vy * rl.getFrameTime();
 
-        if (self.y > SCREEN_HEIGHT) {
+        if (self.y > c.SCREEN_HEIGHT) {
             self.* = Drop.init(rand);
         }
     }
 };
 
-pub fn main(init: std.process.Init) anyerror!void {
-    const io = init.io;
-    const rng_impl: std.Random.IoSource = .{ .io = io };
-    const rand = rng_impl.interface();
-
-    rl.initWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "rain");
-    defer rl.closeWindow();
-    rl.setTargetFPS(60);
-
+pub fn run(rand: std.Random) anyerror!void {
     var rain: [RAIN_COUNT]Drop = undefined;
 
     for (&rain) |*drop| {
         drop.* = Drop.init(rand);
     }
 
-    while (!rl.windowShouldClose()) {
+    while (!rl.windowShouldClose() and !rl.isKeyPressed(.escape)) {
         for (&rain) |*drop| {
             drop.*.move(rand);
         }
@@ -68,7 +57,7 @@ pub fn main(init: std.process.Init) anyerror!void {
         rl.beginDrawing();
         defer rl.endDrawing();
 
-        rl.clearBackground(BG_COLOR);
+        rl.clearBackground(c.rosepine.base);
 
         for (&rain) |*drop| {
             drop.*.draw();

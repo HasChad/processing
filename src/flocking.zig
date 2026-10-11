@@ -1,10 +1,6 @@
 const std = @import("std");
 const rl = @import("raylib");
-
-const SCREEN_WIDTH = 800;
-const SCREEN_HEIGHT = 600;
-const BG_COLOR = rl.Color{ .r = 25, .g = 23, .b = 36, .a = 255 };
-const BOID_COLOR = rl.Color{ .r = 144, .g = 140, .b = 170, .a = 255 };
+const c = @import("common.zig");
 
 const FLOCK_SIZE = 100;
 const WALL_SIZE = 10;
@@ -19,8 +15,8 @@ const Wall = struct {
     pub fn init(rand: std.Random) Wall {
         return Wall{
             .pos = rl.Vector2{
-                .x = rand.float(f32) * SCREEN_WIDTH,
-                .y = rand.float(f32) * SCREEN_HEIGHT,
+                .x = rand.float(f32) * c.SCREEN_WIDTH,
+                .y = rand.float(f32) * c.SCREEN_HEIGHT,
             },
         };
     }
@@ -48,8 +44,8 @@ const Boid = struct {
         return Boid{
             .id = @intCast(id),
             .pos = rl.Vector2{
-                .x = rand.float(f32) * SCREEN_WIDTH,
-                .y = rand.float(f32) * SCREEN_HEIGHT,
+                .x = rand.float(f32) * c.SCREEN_WIDTH,
+                .y = rand.float(f32) * c.SCREEN_HEIGHT,
             },
             .vel = vel,
             .accel = rl.Vector2.zero(),
@@ -200,16 +196,16 @@ const Boid = struct {
 
         self.accel = rl.Vector2.zero();
 
-        if (self.pos.x > SCREEN_WIDTH) {
+        if (self.pos.x > c.SCREEN_WIDTH) {
             self.pos.x = 0;
         } else if (self.pos.x < 0) {
-            self.pos.x = SCREEN_WIDTH;
+            self.pos.x = c.SCREEN_WIDTH;
         }
 
-        if (self.pos.y > SCREEN_HEIGHT) {
+        if (self.pos.y > c.SCREEN_HEIGHT) {
             self.pos.y = 0;
         } else if (self.pos.y < 0) {
-            self.pos.y = SCREEN_HEIGHT;
+            self.pos.y = c.SCREEN_HEIGHT;
         }
     }
 
@@ -225,24 +221,16 @@ const Boid = struct {
         p2 = p2.rotate(rot).add(self.pos);
         p3 = p3.rotate(rot).add(self.pos);
 
-        rl.drawTriangle(p1, p2, p3, BOID_COLOR);
+        rl.drawTriangle(p1, p2, p3, c.rosepine.subtle);
 
         if (self.id == 0) {
-            rl.drawLineV(self.pos, self.pos.add(self.vel.scale(50)), BOID_COLOR);
+            rl.drawLineV(self.pos, self.pos.add(self.vel.scale(50)), c.rosepine.subtle);
             rl.drawCircleLinesV(self.pos, self.perception, rl.Color.white.alpha(0.5));
         }
     }
 };
 
-pub fn main(init: std.process.Init) anyerror!void {
-    const io = init.io;
-    const rng_impl: std.Random.IoSource = .{ .io = io };
-    const rand = rng_impl.interface();
-
-    rl.initWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "flocking");
-    defer rl.closeWindow();
-    rl.setTargetFPS(60);
-
+pub fn run(rand: std.Random) anyerror!void {
     var flock: [FLOCK_SIZE]Boid = undefined;
 
     for (&flock, 0..) |*single, i| {
@@ -255,10 +243,10 @@ pub fn main(init: std.process.Init) anyerror!void {
         wall.* = Wall.init(rand);
     }
 
-    while (!rl.windowShouldClose()) {
+    while (!rl.windowShouldClose() and !rl.isKeyPressed(.escape)) {
         rl.beginDrawing();
         defer rl.endDrawing();
-        rl.clearBackground(BG_COLOR);
+        rl.clearBackground(c.rosepine.base);
 
         for (&flock) |*boid| {
             boid.*.alignment(&flock);

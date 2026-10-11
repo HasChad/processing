@@ -1,39 +1,29 @@
 const std = @import("std");
 const rl = @import("raylib");
 const rg = @import("raygui");
-
-const SCREEN_WIDTH = 800;
-const SCREEN_HEIGHT = 600;
-const BG_COLOR = rl.Color{ .r = 25, .g = 23, .b = 36, .a = 255 };
-const BRANCH_COLOR = rl.Color{ .r = 224, .g = 222, .b = 244, .a = 255 };
+const c = @import("common.zig");
 
 const LEN_MUL = 0.82;
 
-pub fn main() anyerror!void {
-    rl.initWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "fractal-tree");
-    defer rl.closeWindow();
-    rl.setTargetFPS(60);
-
+pub fn run() anyerror!void {
     const origin = rl.Vector2{
-        .x = SCREEN_WIDTH / 2,
-        .y = SCREEN_HEIGHT,
+        .x = c.SCREEN_WIDTH / 2,
+        .y = c.SCREEN_HEIGHT,
     };
     const rot: f32 = 0;
     var add_rot: f32 = 30;
     var count: i32 = 12;
 
-    while (!rl.windowShouldClose()) {
-
-        // Draw
+    while (!rl.windowShouldClose() and !rl.isKeyPressed(.escape)) {
         rl.beginDrawing();
         defer rl.endDrawing();
 
-        rl.clearBackground(BG_COLOR);
+        rl.clearBackground(c.rosepine.base);
 
         drawBranch(origin, 100, count, rot, add_rot);
         renderUI(&add_rot, &count);
 
-        rl.drawText(rl.textFormat("%i FPS", .{rl.getFPS()}), SCREEN_WIDTH - 80, 5, 20, .white);
+        rl.drawText(rl.textFormat("%i FPS", .{rl.getFPS()}), c.SCREEN_WIDTH - 80, 5, 20, .white);
     }
 }
 
@@ -49,7 +39,7 @@ fn drawBranch(start: rl.Vector2, len: f32, count: i32, rot: f32, add_rot: f32) v
     end.x = x * @cos(rad) - y * @sin(rad) + start.x;
     end.y = x * @sin(rad) + y * @cos(rad) + start.y;
 
-    rl.drawLineV(start, end, BRANCH_COLOR);
+    rl.drawLineV(start, end, c.rosepine.text);
 
     if (count - 1 > 0 and len > 1.0) {
         drawBranch(end, len * LEN_MUL, count - 1, rot + add_rot, add_rot);

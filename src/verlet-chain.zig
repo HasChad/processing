@@ -1,10 +1,7 @@
 const std = @import("std");
 const rl = @import("raylib");
+const c = @import("common.zig");
 
-const SCREEN_WIDTH = 800;
-const SCREEN_HEIGHT = 600;
-const BG_COLOR = rl.Color{ .r = 25, .g = 23, .b = 36, .a = 255 };
-const BALL_COLOR = rl.Color{ .r = 224, .g = 222, .b = 244, .a = 255 };
 const BALL_COUNT = 1;
 
 const GRAVITY = rl.Vector2{
@@ -103,7 +100,7 @@ const Link = struct {
         const delta = self.target_dist - dist;
 
         if (obj_1.pinned and obj_2.pinned) {
-            return; // both fixed, nothing to do
+            return;
         } else if (obj_1.pinned) {
             obj_2.current_pos = obj_2.current_pos.subtract(n.scale(delta));
         } else if (obj_2.pinned) {
@@ -115,18 +112,11 @@ const Link = struct {
     }
 };
 
-pub fn main(init: std.process.Init) anyerror!void {
-    const io = init.io;
-    const rng_impl: std.Random.IoSource = .{ .io = io };
-    const rand = rng_impl.interface();
-
+pub fn run(rand: std.Random) anyerror!void {
     var gpa = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    rl.initWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "verlet-chain");
-    defer rl.closeWindow();
-    rl.setTargetFPS(60);
     var enableShooter = false;
 
     var balls = try std.ArrayList(Ball).initCapacity(allocator, 100);
@@ -148,7 +138,7 @@ pub fn main(init: std.process.Init) anyerror!void {
         });
     }
 
-    while (!rl.windowShouldClose()) {
+    while (!rl.windowShouldClose() and !rl.isKeyPressed(.escape)) {
         if (rl.isKeyPressed(rl.KeyboardKey.space)) {
             enableShooter = !enableShooter;
         }
@@ -165,19 +155,19 @@ pub fn main(init: std.process.Init) anyerror!void {
             const vec = dir.scale(speed);
 
             try balls.append(allocator, Ball.initSpeed(
-                rl.Vector2.init(SCREEN_WIDTH / 2, 50),
+                rl.Vector2.init(c.SCREEN_WIDTH / 2, 50),
                 vec,
-                getRainbow(shooter_time),
+                c.getRainbow(shooter_time),
                 rand,
             ));
         }
 
         if (rl.isMouseButtonPressed(rl.MouseButton.left)) {
-            try balls.append(allocator, Ball.init(rl.getMousePosition(), BALL_COLOR));
+            try balls.append(allocator, Ball.init(rl.getMousePosition(), c.rosepine.text));
         }
 
         if (rl.isMouseButtonDown(rl.MouseButton.right)) {
-            try balls.append(allocator, Ball.init(rl.getMousePosition(), BALL_COLOR));
+            try balls.append(allocator, Ball.init(rl.getMousePosition(), c.rosepine.text));
         }
 
         removeOffscreen(&balls);
@@ -187,13 +177,13 @@ pub fn main(init: std.process.Init) anyerror!void {
         rl.beginDrawing();
         defer rl.endDrawing();
 
-        rl.clearBackground(BG_COLOR);
+        rl.clearBackground(c.rosepine.base);
 
         for (balls.items) |*single| {
             single.*.draw();
         }
 
-        rl.drawText(rl.textFormat("%i FPS", .{rl.getFPS()}), 5, 5, 20, BALL_COLOR);
+        rl.drawText(rl.textFormat("%i FPS", .{rl.getFPS()}), 5, 5, 20, c.rosepine.text);
         rl.drawText(rl.textFormat("BALLS: %i", .{balls.items.len}), 5, 25, 20, .white);
     }
 }
@@ -265,26 +255,13 @@ fn solveCollisions(balls: []Ball) void {
 fn removeOffscreen(balls: *std.ArrayList(Ball)) void {
     var i: usize = balls.items.len;
     while (i > 0) : (i -= 1) {
-        const b = balls.items[i];
-        if (b.current_pos.y > SCREEN_HEIGHT + 100 or
+        const b = balls.items[i - 1];
+        if (b.current_pos.y > c.SCREEN_HEIGHT + 100 or
             b.current_pos.y < -100 or
             b.current_pos.x < -100 or
-            b.current_pos.x > SCREEN_WIDTH + 100)
+            b.current_pos.x > c.SCREEN_WIDTH + 100)
         {
-            _ = balls.swapRemove(i);
+            _ = balls.swapRemove(i - 1);
         }
     }
-}
-
-fn getRainbow(dt: f32) rl.Color {
-    const r = std.math.sin(dt);
-    const g = std.math.sin(dt + 0.33 * 2.0 * std.math.pi);
-    const b = std.math.sin(dt + 0.66 * 2.0 * std.math.pi);
-
-    return rl.Color.init(
-        @intFromFloat(r * r * 255),
-        @intFromFloat(g * g * 255),
-        @intFromFloat(b * b * 255),
-        255,
-    );
 }

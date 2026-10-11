@@ -1,10 +1,7 @@
 const std = @import("std");
 const rl = @import("raylib");
+const c = @import("common.zig");
 
-const SCREEN_WIDTH = 800;
-const SCREEN_HEIGHT = 600;
-const BG_COLOR = rl.Color{ .r = 25, .g = 23, .b = 36, .a = 255 };
-const BALL_COLOR = rl.Color{ .r = 224, .g = 222, .b = 244, .a = 255 };
 const BALL_COUNT = 1;
 
 const GRAVITY = rl.Vector2{
@@ -78,29 +75,21 @@ const Ball = struct {
     }
 };
 
-pub fn main(init: std.process.Init) anyerror!void {
-    const io = init.io;
-    const rng_impl: std.Random.IoSource = .{ .io = io };
-    const rand = rng_impl.interface();
-
+pub fn run(rand: std.Random) anyerror!void {
     var gpa = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
-
-    rl.initWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "verlet-physics");
-    defer rl.closeWindow();
-    rl.setTargetFPS(60);
 
     var enableShooter = false;
     var balls = try std.ArrayList(Ball).initCapacity(allocator, 100);
 
     const position = rl.Vector2{
-        .x = SCREEN_WIDTH / 2,
-        .y = SCREEN_HEIGHT / 2,
+        .x = c.SCREEN_WIDTH / 2,
+        .y = c.SCREEN_HEIGHT / 2,
     };
     const radius = 300.0;
 
-    while (!rl.windowShouldClose()) {
+    while (!rl.windowShouldClose() and !rl.isKeyPressed(.escape)) {
         if (rl.isKeyPressed(rl.KeyboardKey.space)) {
             enableShooter = !enableShooter;
         }
@@ -117,19 +106,19 @@ pub fn main(init: std.process.Init) anyerror!void {
             const vec = dir.scale(speed);
 
             try balls.append(allocator, Ball.initSpeed(
-                rl.Vector2.init(SCREEN_WIDTH / 2, 50),
+                rl.Vector2.init(c.SCREEN_WIDTH / 2, 50),
                 vec,
-                getRainbow(shooter_time),
+                c.getRainbow(shooter_time),
                 rand,
             ));
         }
 
         if (rl.isMouseButtonPressed(rl.MouseButton.left)) {
-            try balls.append(allocator, Ball.init(rl.getMousePosition(), BALL_COLOR));
+            try balls.append(allocator, Ball.init(rl.getMousePosition(), c.rosepine.text));
         }
 
         if (rl.isMouseButtonDown(rl.MouseButton.right)) {
-            try balls.append(allocator, Ball.init(rl.getMousePosition(), BALL_COLOR));
+            try balls.append(allocator, Ball.init(rl.getMousePosition(), c.rosepine.text));
         }
 
         update(balls.items, rl.getFrameTime());
@@ -138,7 +127,7 @@ pub fn main(init: std.process.Init) anyerror!void {
         rl.beginDrawing();
         defer rl.endDrawing();
 
-        rl.clearBackground(BG_COLOR);
+        rl.clearBackground(c.rosepine.base);
 
         rl.drawCircleV(position, radius, .black);
 
@@ -153,8 +142,8 @@ pub fn main(init: std.process.Init) anyerror!void {
 
 fn update(balls: []Ball, dt: f32) void {
     const position = rl.Vector2{
-        .x = SCREEN_WIDTH / 2,
-        .y = SCREEN_HEIGHT / 2,
+        .x = c.SCREEN_WIDTH / 2,
+        .y = c.SCREEN_HEIGHT / 2,
     };
     const radius = 300.0;
 
@@ -208,17 +197,4 @@ fn solveCollisions(balls: []Ball) void {
             }
         }
     }
-}
-
-fn getRainbow(dt: f32) rl.Color {
-    const r = std.math.sin(dt);
-    const g = std.math.sin(dt + 0.33 * 2.0 * std.math.pi);
-    const b = std.math.sin(dt + 0.66 * 2.0 * std.math.pi);
-
-    return rl.Color.init(
-        @intFromFloat(r * r * 255),
-        @intFromFloat(g * g * 255),
-        @intFromFloat(b * b * 255),
-        255,
-    );
 }
