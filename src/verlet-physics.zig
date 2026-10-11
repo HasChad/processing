@@ -2,8 +2,6 @@ const std = @import("std");
 const rl = @import("raylib");
 const c = @import("common.zig");
 
-const BALL_COUNT = 1;
-
 const GRAVITY = rl.Vector2{
     .x = 0,
     .y = 1000.0,
@@ -135,7 +133,7 @@ pub fn run(rand: std.Random) anyerror!void {
             single.*.draw();
         }
 
-        rl.drawText(rl.textFormat("%i FPS", .{rl.getFPS()}), 5, 5, 20, .white);
+        c.drawFPS();
         rl.drawText(rl.textFormat("BALLS: %i", .{balls.items.len}), 5, 25, 20, .white);
     }
 }

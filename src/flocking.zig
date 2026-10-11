@@ -188,8 +188,8 @@ const Boid = struct {
         }
 
         if (self.id == 0) {
-            rl.drawText(rl.textFormat("Speed: %.4f", .{self.vel.length()}), 5, 5, 20, .white);
-            rl.drawText(rl.textFormat("Accel: %.4f", .{self.accel.length()}), 5, 30, 20, .white);
+            rl.drawText(rl.textFormat("Speed: %.4f", .{self.vel.length()}), 5, 30, 20, .white);
+            rl.drawText(rl.textFormat("Accel: %.4f", .{self.accel.length()}), 5, 55, 20, .white);
         }
 
         self.pos = self.pos.add(self.vel);
@@ -261,5 +261,7 @@ pub fn run(rand: std.Random) anyerror!void {
         for (&walls) |*wall| {
             wall.*.draw();
         }
+
+        c.drawFPS();
     }
 }

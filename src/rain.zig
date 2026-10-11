@@ -63,6 +63,6 @@ pub fn run(rand: std.Random) anyerror!void {
             drop.*.draw();
         }
 
-        rl.drawText(rl.textFormat("%i FPS", .{rl.getFPS()}), 5, 5, 20, .white);
+        c.drawFPS();
     }
 }

@@ -61,6 +61,9 @@ pub fn main(init: std.process.Init) anyerror!void {
 
             if (rg.button(.init(20, 260, 120, 30), "Verlet Chain"))
                 current_project = .VerletChain;
+
+            if (c.colorButton(.init(c.SCREEN_WIDTH / 2 - 60, c.SCREEN_HEIGHT - 40, 120, 30), "Quit", c.rosepine.love))
+                break;
         }
 
         switch (current_project) {

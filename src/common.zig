@@ -1,5 +1,6 @@
 const std = @import("std");
 const rl = @import("raylib");
+const rg = @import("raygui");
 
 pub const SCREEN_WIDTH = 800;
 pub const SCREEN_HEIGHT = 600;
@@ -33,4 +34,33 @@ pub fn getRainbow(dt: f32) rl.Color {
         @intFromFloat(b * b * 255),
         255,
     );
+}
+
+pub fn drawFPS() void {
+    rl.drawText(rl.textFormat("%i FPS", .{rl.getFPS()}), 5, 5, 20, rosepine.iris);
+}
+
+pub fn colorButton(bounds: rl.Rectangle, text: [:0]const u8, color: rl.Color) bool {
+    const props = [_]rg.ControlProperty{
+        .border_color_normal,  .base_color_normal,  .text_color_normal,
+        .border_color_focused, .base_color_focused, .text_color_focused,
+        .border_color_pressed, .base_color_pressed, .text_color_pressed,
+    };
+
+    const border = color.brightness(-0.3);
+    const values = [_]rl.Color{
+        border, color,                  rosepine.base,
+        border, color.brightness(0.2),  rosepine.base,
+        border, color.brightness(-0.2), rosepine.base,
+    };
+
+    var old: [props.len]i32 = undefined;
+    for (props, 0..) |p, i| old[i] = rg.getStyle(.button, p);
+    defer {
+        for (props, 0..) |p, i| rg.setStyle(.button, p, old[i]);
+    }
+
+    for (props, values) |p, v| rg.setStyle(.button, p, rl.colorToInt(v));
+
+    return rg.button(bounds, text);
 }

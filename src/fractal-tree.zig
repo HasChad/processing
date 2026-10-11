@@ -23,7 +23,7 @@ pub fn run() anyerror!void {
         drawBranch(origin, 100, count, rot, add_rot);
         renderUI(&add_rot, &count);
 
-        rl.drawText(rl.textFormat("%i FPS", .{rl.getFPS()}), c.SCREEN_WIDTH - 80, 5, 20, .white);
+        c.drawFPS();
     }
 }
 
@@ -51,7 +51,7 @@ fn renderUI(add_rot: *f32, count: *i32) void {
     _ = rg.sliderBar(
         rl.Rectangle{
             .x = 50,
-            .y = 5,
+            .y = c.SCREEN_HEIGHT - 50,
             .width = 100,
             .height = 20,
         },
@@ -68,7 +68,7 @@ fn renderUI(add_rot: *f32, count: *i32) void {
     _ = rg.sliderBar(
         rl.Rectangle{
             .x = 50,
-            .y = 30,
+            .y = c.SCREEN_HEIGHT - 25,
             .width = 100,
             .height = 20,
         },

@@ -2,8 +2,6 @@ const std = @import("std");
 const rl = @import("raylib");
 const c = @import("common.zig");
 
-const BALL_COUNT = 1;
-
 const GRAVITY = rl.Vector2{
     .x = 0,
     .y = 1000.0,
@@ -183,7 +181,7 @@ pub fn run(rand: std.Random) anyerror!void {
             single.*.draw();
         }
 
-        rl.drawText(rl.textFormat("%i FPS", .{rl.getFPS()}), 5, 5, 20, c.rosepine.text);
+        c.drawFPS();
         rl.drawText(rl.textFormat("BALLS: %i", .{balls.items.len}), 5, 25, 20, .white);
     }
 }
@@ -211,18 +209,6 @@ fn applyGravity(balls: []Ball) void {
 fn updatePositions(balls: []Ball, dt: f32) void {
     for (balls) |*single| {
         single.*.update_positon(dt);
-    }
-}
-
-fn applyConstraints(balls: []Ball, position: rl.Vector2, radius: f32) void {
-    for (balls) |*ball| {
-        const to_obj = ball.current_pos.subtract(position);
-        const dist = to_obj.length();
-
-        if (dist > radius - ball.radius) {
-            const n = to_obj.scale(1 / dist);
-            ball.*.current_pos = position.add(n.scale(radius - ball.radius));
-        }
     }
 }
 
