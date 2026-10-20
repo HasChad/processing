@@ -22,7 +22,7 @@ const Wall = struct {
     }
 
     pub fn draw(self: Wall) void {
-        rl.drawCircleV(self.pos, 5.0, rl.Color.red);
+        rl.drawCircleV(self.pos, 5.0, c.rosepine.gold);
     }
 };
 
