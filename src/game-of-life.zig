@@ -3,13 +3,11 @@ const rl = @import("raylib");
 const rg = @import("raygui");
 const c = @import("common.zig");
 
-const canvas_w: u32 = 80;
-const canvas_h: u32 = 60;
 const scale: u32 = 10;
+const canvas_w: u32 = c.SCREEN_WIDTH / scale;
+const canvas_h: u32 = c.SCREEN_HEIGHT / scale;
 
 pub fn run() anyerror!void {
-    const tex = try rl.loadTextureFromImage(rl.genImageColor(canvas_w, canvas_h, .black));
-
     var play_sim = false;
     var step = false;
     var draw_grid = true;
@@ -17,6 +15,8 @@ pub fn run() anyerror!void {
     var cells: [canvas_w * canvas_h]u8 = std.mem.zeroes([canvas_w * canvas_h]u8);
     var buffer: [canvas_w * canvas_h]u8 = std.mem.zeroes([canvas_w * canvas_h]u8);
     var pixels: [canvas_w * canvas_h]rl.Color = undefined;
+
+    const tex = try rl.loadTextureFromImage(rl.genImageColor(canvas_w, canvas_h, .black));
 
     while (!rl.windowShouldClose() and !rl.isKeyPressed(.escape)) {
         const m_pos = rl.getMousePosition();
@@ -52,7 +52,7 @@ pub fn run() anyerror!void {
 
         // pixel color update
         for (cells, 0..) |cell, i| {
-            pixels[i] = if (cell != 0) .white else .black;
+            pixels[i] = if (cell != 0) c.rosepine.text else c.rosepine.base;
         }
 
         // Draw
@@ -113,12 +113,12 @@ pub fn run() anyerror!void {
 fn drawGrid() void {
     for (0..canvas_w) |i| {
         const index: i32 = @intCast(i);
-        rl.drawLine(index * scale, 0, index * scale, c.SCREEN_HEIGHT, .dark_gray);
+        rl.drawLine(index * scale, 0, index * scale, c.SCREEN_HEIGHT, c.rosepine.highlight_med);
     }
 
     for (0..canvas_h) |i| {
         const index: i32 = @intCast(i);
-        rl.drawLine(0, index * scale, c.SCREEN_WIDTH, index * scale, .dark_gray);
+        rl.drawLine(0, index * scale, c.SCREEN_WIDTH, index * scale, c.rosepine.highlight_med);
     }
 }
 
