@@ -61,7 +61,7 @@ pub fn main(init: std.process.Init) anyerror!void {
                 current_project = .MainMenu;
             },
             .GameOfLife => {
-                try gol_sketch.run(rand);
+                try gol_sketch.run();
                 current_project = .MainMenu;
             },
             .Quit => {

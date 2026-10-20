@@ -36,5 +36,9 @@ pub fn build(b: *std.Build) void {
     run_cmd.addPassthruArgs();
 
     const check = b.step("check", "Check if it compiles");
-    check.dependOn(&exe.step);
+    const exe_check = b.addExecutable(.{
+        .name = "processing",
+        .root_module = exe.root_module,
+    });
+    check.dependOn(&exe_check.step);
 }
