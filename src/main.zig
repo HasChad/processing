@@ -31,7 +31,7 @@ pub fn main(init: std.process.Init) anyerror!void {
     rl.setExitKey(.null);
     rl.setTargetFPS(60);
 
-    var current_project = Project.GameOfLife;
+    var current_project = Project.MainMenu;
 
     while (!rl.windowShouldClose()) {
         {}
