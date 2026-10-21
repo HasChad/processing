@@ -3,13 +3,13 @@ const rl = @import("raylib");
 const rg = @import("raygui");
 const c = @import("common.zig");
 
-const rain_sketch = @import("rain.zig");
-const fractal_tree_sketch = @import("fractal-tree.zig");
-const flocking_sketch = @import("flocking.zig");
-const verlet_physics_sketch = @import("verlet-physics.zig");
-const verlet_chain_sketch = @import("verlet-chain.zig");
-const gol_sketch = @import("game-of-life.zig");
-const pixel_fire_sketch = @import("pixel-fire.zig");
+const rain_sketch = @import("projects/rain.zig");
+const fractal_tree_sketch = @import("projects/fractal-tree.zig");
+const flocking_sketch = @import("projects/flocking.zig");
+const verlet_physics_sketch = @import("projects/verlet-physics.zig");
+const verlet_chain_sketch = @import("projects/verlet-chain.zig");
+const gol_sketch = @import("projects/game-of-life.zig");
+const pixel_fire_sketch = @import("projects/pixel-fire.zig");
 
 const Project = enum {
     MainMenu,

@@ -1,7 +1,7 @@
 const std = @import("std");
 const rl = @import("raylib");
 const rg = @import("raygui");
-const c = @import("common.zig");
+const c = @import("../common.zig");
 
 const LEN_MUL = 0.82;
 

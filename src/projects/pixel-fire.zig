@@ -1,6 +1,6 @@
 const std = @import("std");
 const rl = @import("raylib");
-const c = @import("common.zig");
+const c = @import("../common.zig");
 
 const scale: u32 = 20;
 const canvas_w: u32 = c.SCREEN_WIDTH / scale;
@@ -16,6 +16,7 @@ pub fn run(rand: std.Random) anyerror!void {
     var pixels: [canvas_w * canvas_h]rl.Color = @splat(c.rosepine.base);
 
     const tex = try rl.loadTextureFromImage(rl.genImageColor(canvas_w, canvas_h, .black));
+    defer rl.unloadTexture(tex);
 
     while (!rl.windowShouldClose() and !rl.isKeyPressed(.escape)) {
         // simulation

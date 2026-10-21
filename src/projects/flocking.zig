@@ -1,6 +1,6 @@
 const std = @import("std");
 const rl = @import("raylib");
-const c = @import("common.zig");
+const c = @import("../common.zig");
 
 const FLOCK_SIZE = 100;
 const WALL_SIZE = 10;

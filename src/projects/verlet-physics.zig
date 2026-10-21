@@ -1,6 +1,6 @@
 const std = @import("std");
 const rl = @import("raylib");
-const c = @import("common.zig");
+const c = @import("../common.zig");
 
 const GRAVITY = rl.Vector2{
     .x = 0,
@@ -12,18 +12,16 @@ const Ball = struct {
     old_pos: rl.Vector2,
     accel: rl.Vector2,
     radius: f32,
-    pinned: bool,
     color: rl.Color,
 
     pub fn init(pos: rl.Vector2, color: rl.Color) Ball {
-        const current_pos = rl.Vector2.init(pos.x, pos.y);
+        const current_pos = rl.Vector2.init(pos.x, pos.y + 3);
 
         return Ball{
             .current_pos = current_pos,
             .old_pos = pos,
             .accel = rl.Vector2.zero(),
-            .radius = 10.0,
-            .pinned = false,
+            .radius = 5.0,
             .color = color,
         };
     }
@@ -36,7 +34,6 @@ const Ball = struct {
             .old_pos = pos,
             .accel = rl.Vector2.zero(),
             .radius = rand.float(f32) * 7 + 3,
-            .pinned = false,
             .color = color,
         };
     }
@@ -49,17 +46,11 @@ const Ball = struct {
             .old_pos = pos,
             .accel = rl.Vector2.zero(),
             .radius = rand.float(f32) * 7 + 3,
-            .pinned = false,
             .color = color,
         };
     }
 
     pub fn update_positon(self: *Ball, dt: f32) void {
-        if (self.pinned) {
-            self.accel = rl.Vector2.zero();
-            return;
-        }
-
         const vel = self.current_pos.subtract(self.old_pos);
 
         self.old_pos = self.current_pos;
@@ -70,7 +61,6 @@ const Ball = struct {
     }
 
     pub fn accelerate(self: *Ball, acc: rl.Vector2) void {
-        if (self.pinned) return;
         self.accel = self.accel.add(acc);
     }
 
@@ -83,58 +73,19 @@ const Ball = struct {
     }
 };
 
-const Link = struct {
-    ball_1: usize,
-    ball_2: usize,
-    target_dist: f32,
-
-    pub fn apply(self: Link, balls: []Ball) void {
-        const obj_1 = &balls[self.ball_1];
-        const obj_2 = &balls[self.ball_2];
-
-        const axis = obj_1.current_pos.subtract(obj_2.current_pos);
-        const dist = axis.length();
-        const n = axis.scale(1 / dist);
-        const delta = self.target_dist - dist;
-
-        if (obj_1.pinned and obj_2.pinned) {
-            return;
-        } else if (obj_1.pinned) {
-            obj_2.current_pos = obj_2.current_pos.subtract(n.scale(delta));
-        } else if (obj_2.pinned) {
-            obj_1.current_pos = obj_1.current_pos.add(n.scale(delta));
-        } else {
-            obj_1.current_pos = obj_1.current_pos.add(n.scale(0.5 * delta));
-            obj_2.current_pos = obj_2.current_pos.subtract(n.scale(0.5 * delta));
-        }
-    }
-};
-
 pub fn run(rand: std.Random) anyerror!void {
     var gpa = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
     var enableShooter = false;
-
     var balls = try std.ArrayList(Ball).initCapacity(allocator, 100);
-    for (0..31) |i| {
-        const f: f32 = @floatFromInt(i);
 
-        try balls.append(allocator, Ball.init(rl.Vector2.init(f * 20 + 100, 500), .white));
-    }
-
-    balls.items[0].pinned = true;
-    balls.items[balls.items.len - 1].pinned = true;
-
-    var links = try std.ArrayList(Link).initCapacity(allocator, 100);
-    for (0..30) |i| {
-        try links.append(allocator, Link{
-            .ball_1 = i,
-            .ball_2 = i + 1,
-            .target_dist = 20.0,
-        });
-    }
+    const position = rl.Vector2{
+        .x = c.SCREEN_WIDTH / 2,
+        .y = c.SCREEN_HEIGHT / 2,
+    };
+    const radius = 300.0;
 
     while (!rl.windowShouldClose() and !rl.isKeyPressed(.escape)) {
         if (rl.isKeyPressed(rl.KeyboardKey.space)) {
@@ -143,7 +94,7 @@ pub fn run(rand: std.Random) anyerror!void {
 
         const shooter_time: f32 = @floatCast(rl.getTime());
         if (enableShooter) {
-            const max_angle = std.math.pi / 6.0; // 30 swing each side
+            const max_angle = std.math.pi / 4.0; // 45 swing each side
             const swing_speed = 2.0;
             const angle = std.math.sin(shooter_time * swing_speed) * max_angle;
 
@@ -168,14 +119,15 @@ pub fn run(rand: std.Random) anyerror!void {
             try balls.append(allocator, Ball.init(rl.getMousePosition(), c.rosepine.text));
         }
 
-        removeOffscreen(&balls);
-        update(balls.items, links.items, rl.getFrameTime());
+        update(balls.items, rl.getFrameTime());
 
         // Draw
         rl.beginDrawing();
         defer rl.endDrawing();
 
         rl.clearBackground(c.rosepine.base);
+
+        rl.drawCircleV(position, radius, .black);
 
         for (balls.items) |*single| {
             single.*.draw();
@@ -186,16 +138,20 @@ pub fn run(rand: std.Random) anyerror!void {
     }
 }
 
-fn update(balls: []Ball, links: []Link, dt: f32) void {
+fn update(balls: []Ball, dt: f32) void {
+    const position = rl.Vector2{
+        .x = c.SCREEN_WIDTH / 2,
+        .y = c.SCREEN_HEIGHT / 2,
+    };
+    const radius = 300.0;
+
     const sub_steps = 8.0;
     const sub_dt = dt / sub_steps;
 
     for (0..sub_steps) |_| {
         applyGravity(balls);
+        applyConstraints(balls, position, radius);
         solveCollisions(balls);
-        for (links) |link| {
-            link.apply(balls);
-        }
         updatePositions(balls, sub_dt);
     }
 }
@@ -212,6 +168,18 @@ fn updatePositions(balls: []Ball, dt: f32) void {
     }
 }
 
+fn applyConstraints(balls: []Ball, position: rl.Vector2, radius: f32) void {
+    for (balls) |*ball| {
+        const to_obj = ball.current_pos.subtract(position);
+        const dist = to_obj.length();
+
+        if (dist > radius - ball.radius) {
+            const n = to_obj.scale(1 / dist);
+            ball.*.current_pos = position.add(n.scale(radius - ball.radius));
+        }
+    }
+}
+
 fn solveCollisions(balls: []Ball) void {
     for (balls, 0..) |*obj_1, i| {
         for (balls[i + 1 ..]) |*obj_2| {
@@ -222,32 +190,9 @@ fn solveCollisions(balls: []Ball) void {
             if (dist < min_dist and dist != 0.0) {
                 const n = collision_axis.scale(1 / dist);
                 const delta = min_dist - dist;
-
-                if (obj_1.pinned and obj_2.pinned) {
-                    continue;
-                } else if (obj_1.pinned) {
-                    obj_2.current_pos = obj_2.current_pos.subtract(n.scale(delta));
-                } else if (obj_2.pinned) {
-                    obj_1.current_pos = obj_1.current_pos.add(n.scale(delta));
-                } else {
-                    obj_1.current_pos = obj_1.current_pos.add(n.scale(0.5 * delta));
-                    obj_2.current_pos = obj_2.current_pos.subtract(n.scale(0.5 * delta));
-                }
+                obj_1.current_pos = obj_1.current_pos.add(n.scale(0.5 * delta));
+                obj_2.current_pos = obj_2.current_pos.subtract(n.scale(0.5 * delta));
             }
-        }
-    }
-}
-
-fn removeOffscreen(balls: *std.ArrayList(Ball)) void {
-    var i: usize = balls.items.len;
-    while (i > 0) : (i -= 1) {
-        const b = balls.items[i - 1];
-        if (b.current_pos.y > c.SCREEN_HEIGHT + 100 or
-            b.current_pos.y < -100 or
-            b.current_pos.x < -100 or
-            b.current_pos.x > c.SCREEN_WIDTH + 100)
-        {
-            _ = balls.swapRemove(i - 1);
         }
     }
 }

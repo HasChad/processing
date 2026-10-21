@@ -1,7 +1,7 @@
 const std = @import("std");
 const rl = @import("raylib");
 const rg = @import("raygui");
-const c = @import("common.zig");
+const c = @import("../common.zig");
 
 const scale: u32 = 10;
 const canvas_w: u32 = c.SCREEN_WIDTH / scale;
@@ -20,6 +20,7 @@ pub fn run() anyerror!void {
     var pixels: [canvas_w * canvas_h]rl.Color = @splat(c.rosepine.base);
 
     const tex = try rl.loadTextureFromImage(rl.genImageColor(canvas_w, canvas_h, .black));
+    defer rl.unloadTexture(tex);
 
     while (!rl.windowShouldClose() and !rl.isKeyPressed(.escape)) {
         const m_pos = rl.getMousePosition();

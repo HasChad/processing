@@ -1,6 +1,6 @@
 const std = @import("std");
 const rl = @import("raylib");
-const c = @import("common.zig");
+const c = @import("../common.zig");
 
 const RAIN_COUNT = 200;
 
