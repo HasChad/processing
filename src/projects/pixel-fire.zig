@@ -2,9 +2,10 @@ const std = @import("std");
 const rl = @import("raylib");
 const c = @import("../common.zig");
 
-const scale: u32 = 10;
-const canvas_w: u32 = c.SCREEN_WIDTH / scale;
-const canvas_h: u32 = c.SCREEN_HEIGHT / scale;
+const SCALE: u32 = 5;
+const CANVAS_W: u32 = c.SCREEN_WIDTH / SCALE;
+const CANVAS_H: u32 = c.SCREEN_HEIGHT / SCALE;
+const MAX_HEAT: u8 = 35;
 
 pub fn run(rand: std.Random) anyerror!void {
     const tick_rate: f32 = 30;
@@ -13,11 +14,10 @@ pub fn run(rand: std.Random) anyerror!void {
 
     var enable_fire = true;
 
-    var cells: [canvas_w * canvas_h]u8 = @splat(0);
-    var buffer: [canvas_w * canvas_h]u8 = @splat(0);
-    var pixels: [canvas_w * canvas_h]rl.Color = @splat(c.rosepine.base);
+    var cells: [CANVAS_W * CANVAS_H]u8 = @splat(0);
+    var pixels: [CANVAS_W * CANVAS_H]rl.Color = @splat(c.rosepine.base);
 
-    const tex = try rl.loadTextureFromImage(rl.genImageColor(canvas_w, canvas_h, .black));
+    const tex = try rl.loadTextureFromImage(rl.genImageColor(CANVAS_W, CANVAS_H, .black));
     defer rl.unloadTexture(tex);
 
     while (!rl.windowShouldClose() and !rl.isKeyPressed(.escape)) {
@@ -31,31 +31,18 @@ pub fn run(rand: std.Random) anyerror!void {
         tick_acc += rl.getFrameTime();
 
         if (tick_acc > tick_duration) {
-            cellSimulation(rand, &enable_fire, &cells, &buffer);
-
-            cells = buffer;
-            buffer = std.mem.zeroes([canvas_w * canvas_h]u8);
+            cellSimulation(
+                rand,
+                &enable_fire,
+                &cells,
+            );
 
             tick_acc -= tick_duration;
         }
 
         // pixel color update
         for (cells, 0..) |cell, i| {
-            const color = if (cell > 23) c: {
-                const num = 21 * (cell - 23);
-
-                break :c rl.Color.init(255, 255, num, 255);
-            } else if (cell > 11) c: {
-                const num = 21 * (cell - 11);
-
-                break :c rl.Color.init(255, num, 0, 255);
-            } else c: {
-                const num = 21 * cell;
-
-                break :c rl.Color.init(num, 0, 0, 255);
-            };
-
-            pixels[i] = color;
+            pixels[i] = heatColor(cell);
         }
 
         // Draw
@@ -64,37 +51,38 @@ pub fn run(rand: std.Random) anyerror!void {
         rl.clearBackground(c.rosepine.base);
 
         rl.updateTexture(tex, &pixels);
-        rl.drawTextureEx(tex, rl.Vector2.init(0, 0), 0, scale, .white);
+        rl.drawTextureEx(tex, rl.Vector2.init(0, 0), 0, SCALE, .white);
 
         c.drawFPS();
     }
 }
 
-fn cellSimulation(rand: std.Random, enable_fire: *bool, cells: []u8, buffer: []u8) void {
-    for (cells, 0..) |_, i| {
-        const x = i % canvas_w;
-        const y = i / canvas_w;
+fn cellSimulation(rand: std.Random, enable_fire: *bool, cells: []u8) void {
+    for (0..cells.len) |i| {
+        const x = i % CANVAS_W;
+        const y = i / CANVAS_W;
 
-        if (y == canvas_h - 1) {
-            if (enable_fire.*) {
-                buffer[i] = 35;
-            } else {
-                buffer[i] = 0;
-            }
+        if (y == CANVAS_H - 1) {
+            cells[i] = if (enable_fire.*) MAX_HEAT else 0;
         } else {
-            var shift = rand.uintAtMost(u8, 2);
-
-            if (x + shift > canvas_w - 1) {
-                shift = 0;
-            }
-
-            const lower_cell = cells[i + canvas_w + shift];
-
-            if (lower_cell >= 2) {
-                buffer[i] = lower_cell - rand.uintAtMost(u8, 2);
-            } else if (lower_cell == 1) {
-                buffer[i] = 0;
-            }
+            const rng = rand.uintAtMost(usize, 3);
+            const dst_x = (x + CANVAS_W + 1 - rng) % CANVAS_W;
+            cells[y * CANVAS_W + dst_x] = cells[(y + 1) * CANVAS_W + x] -| @as(u8, @intCast(rng & 1));
         }
     }
+}
+
+fn heatColor(cell: u8) rl.Color {
+    const t = @as(f32, @floatFromInt(cell)) / @as(f32, @floatFromInt(MAX_HEAT)) * 3.0;
+
+    const r = @min(t, 1.0);
+    const g = std.math.clamp(t - 1.0, 0.0, 1.0);
+    const b = std.math.clamp(t - 2.0, 0.0, 1.0);
+
+    return rl.Color.init(
+        @intFromFloat(r * 255),
+        @intFromFloat(g * 255),
+        @intFromFloat(b * 255),
+        255,
+    );
 }
