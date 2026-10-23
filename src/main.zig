@@ -33,7 +33,7 @@ pub fn main(init: std.process.Init) anyerror!void {
     rl.setExitKey(.null);
     rl.setTargetFPS(60);
 
-    var current_project = Project.PixelFire;
+    var current_project = Project.MainMenu;
 
     while (!rl.windowShouldClose()) {
         {}
@@ -88,30 +88,30 @@ fn mainMenu(current_project: *Project) void {
     rl.drawText(
         title,
         @divTrunc(c.SCREEN_WIDTH - width, 2),
-        40,
+        20,
         font_size,
         c.getRainbow(@floatCast(rl.getTime())),
     );
 
-    if (rg.button(.init(20, 100, 120, 30), "Rain"))
+    if (rg.button(.init(c.SCREEN_WIDTH / 2 - 60, 100, 120, 30), "Rain"))
         current_project.* = .Rain;
 
-    if (rg.button(.init(20, 140, 120, 30), "Fractal Tree"))
+    if (rg.button(.init(c.SCREEN_WIDTH / 2 - 60, 140, 120, 30), "Fractal Tree"))
         current_project.* = .FractalTree;
 
-    if (rg.button(.init(20, 180, 120, 30), "Flocking"))
+    if (rg.button(.init(c.SCREEN_WIDTH / 2 - 60, 180, 120, 30), "Flocking"))
         current_project.* = .Flocking;
 
-    if (rg.button(.init(20, 220, 120, 30), "Verlet Physics"))
+    if (rg.button(.init(c.SCREEN_WIDTH / 2 - 60, 220, 120, 30), "Verlet Physics"))
         current_project.* = .VerletPhysics;
 
-    if (rg.button(.init(20, 260, 120, 30), "Verlet Chain"))
+    if (rg.button(.init(c.SCREEN_WIDTH / 2 - 60, 260, 120, 30), "Verlet Chain"))
         current_project.* = .VerletChain;
 
-    if (rg.button(.init(20, 300, 120, 30), "Game of Life"))
+    if (rg.button(.init(c.SCREEN_WIDTH / 2 - 60, 300, 120, 30), "Game of Life"))
         current_project.* = .GameOfLife;
 
-    if (rg.button(.init(20, 340, 120, 30), "Pixel Fire"))
+    if (rg.button(.init(c.SCREEN_WIDTH / 2 - 60, 340, 120, 30), "Pixel Fire"))
         current_project.* = .PixelFire;
 
     if (c.colorButton(.init(c.SCREEN_WIDTH / 2 - 60, c.SCREEN_HEIGHT - 40, 120, 30), "Quit", c.rosepine.love))
