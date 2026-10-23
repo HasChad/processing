@@ -10,6 +10,7 @@ const verlet_physics_sketch = @import("projects/verlet-physics.zig");
 const verlet_chain_sketch = @import("projects/verlet-chain.zig");
 const gol_sketch = @import("projects/game-of-life.zig");
 const pixel_fire_sketch = @import("projects/pixel-fire.zig");
+const falling_sand_sketch = @import("projects/falling-sand.zig");
 
 const Project = enum {
     MainMenu,
@@ -20,6 +21,7 @@ const Project = enum {
     VerletChain,
     GameOfLife,
     PixelFire,
+    FallingSand,
     Quit,
 };
 
@@ -33,7 +35,7 @@ pub fn main(init: std.process.Init) anyerror!void {
     rl.setExitKey(.null);
     rl.setTargetFPS(60);
 
-    var current_project = Project.MainMenu;
+    var current_project = Project.FallingSand;
 
     while (!rl.windowShouldClose()) {
         {}
@@ -68,6 +70,10 @@ pub fn main(init: std.process.Init) anyerror!void {
             },
             .PixelFire => {
                 try pixel_fire_sketch.run(rand);
+                current_project = .MainMenu;
+            },
+            .FallingSand => {
+                try falling_sand_sketch.run(rand);
                 current_project = .MainMenu;
             },
             .Quit => {
@@ -113,6 +119,9 @@ fn mainMenu(current_project: *Project) void {
 
     if (rg.button(.init(c.SCREEN_WIDTH / 2 - 60, 340, 120, 30), "Pixel Fire"))
         current_project.* = .PixelFire;
+
+    if (rg.button(.init(c.SCREEN_WIDTH / 2 - 60, 380, 120, 30), "Falling Sand"))
+        current_project.* = .FallingSand;
 
     if (c.colorButton(.init(c.SCREEN_WIDTH / 2 - 60, c.SCREEN_HEIGHT - 40, 120, 30), "Quit", c.rosepine.love))
         current_project.* = .Quit;

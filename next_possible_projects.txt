@@ -1,0 +1,11 @@
+- Falling sand
+- Raycasting (Wolfenstein style)
+- Langton’s ant
+- Wireworld
+- Mandelbrot/Julia zoomer
+- Metaballs
+- Reaction-diffusion (Gray-Scott)
+- Cloth simulation
+- Maze generation and pathfinding
+- Starfield / 3D rotating cube
+- Snake/Pong AI
