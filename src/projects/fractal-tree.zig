@@ -2,6 +2,7 @@ const std = @import("std");
 const rl = @import("raylib");
 const rg = @import("raygui");
 const c = @import("../common.zig");
+const rp = c.rosepine;
 
 const LEN_MUL = 0.82;
 
@@ -18,7 +19,7 @@ pub fn run() anyerror!void {
         rl.beginDrawing();
         defer rl.endDrawing();
 
-        rl.clearBackground(c.rosepine.base);
+        rl.clearBackground(rp.base);
 
         drawBranch(origin, 100, count, rot, add_rot);
         renderUI(&add_rot, &count);
@@ -39,7 +40,7 @@ fn drawBranch(start: rl.Vector2, len: f32, count: i32, rot: f32, add_rot: f32) v
     end.x = x * @cos(rad) - y * @sin(rad) + start.x;
     end.y = x * @sin(rad) + y * @cos(rad) + start.y;
 
-    rl.drawLineV(start, end, c.rosepine.text);
+    rl.drawLineV(start, end, rp.text);
 
     if (count - 1 > 0 and len > 1.0) {
         drawBranch(end, len * LEN_MUL, count - 1, rot + add_rot, add_rot);

@@ -1,6 +1,7 @@
 const std = @import("std");
 const rl = @import("raylib");
 const c = @import("../common.zig");
+const rp = c.rosepine;
 
 const FLOCK_SIZE = 100;
 const WALL_SIZE = 10;
@@ -22,7 +23,7 @@ const Wall = struct {
     }
 
     pub fn draw(self: Wall) void {
-        rl.drawCircleV(self.pos, 5.0, c.rosepine.gold);
+        rl.drawCircleV(self.pos, 5.0, rp.gold);
     }
 };
 
@@ -221,10 +222,11 @@ const Boid = struct {
         p2 = p2.rotate(rot).add(self.pos);
         p3 = p3.rotate(rot).add(self.pos);
 
-        rl.drawTriangle(p1, p2, p3, c.rosepine.subtle);
+        rl.drawTriangle(p1, p2, p3, rp.subtle);
 
         if (self.id == 0) {
-            rl.drawLineV(self.pos, self.pos.add(self.vel.scale(50)), c.rosepine.subtle);
+            rl.drawLineV(self.pos, self.pos.add(self.vel.scale(50)), rp
+                .subtle);
             rl.drawCircleLinesV(self.pos, self.perception, rl.Color.white.alpha(0.5));
         }
     }
@@ -246,7 +248,7 @@ pub fn run(rand: std.Random) anyerror!void {
     while (!rl.windowShouldClose() and !rl.isKeyPressed(.escape)) {
         rl.beginDrawing();
         defer rl.endDrawing();
-        rl.clearBackground(c.rosepine.base);
+        rl.clearBackground(rp.base);
 
         for (&flock) |*boid| {
             boid.*.alignment(&flock);

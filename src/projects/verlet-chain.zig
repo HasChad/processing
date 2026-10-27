@@ -1,6 +1,7 @@
 const std = @import("std");
 const rl = @import("raylib");
 const c = @import("../common.zig");
+const rp = c.rosepine;
 
 const GRAVITY = rl.Vector2{
     .x = 0,
@@ -161,11 +162,11 @@ pub fn run(rand: std.Random) anyerror!void {
         }
 
         if (rl.isMouseButtonPressed(rl.MouseButton.left)) {
-            try balls.append(allocator, Ball.init(rl.getMousePosition(), c.rosepine.text));
+            try balls.append(allocator, Ball.init(rl.getMousePosition(), rp.text));
         }
 
         if (rl.isMouseButtonDown(rl.MouseButton.right)) {
-            try balls.append(allocator, Ball.init(rl.getMousePosition(), c.rosepine.text));
+            try balls.append(allocator, Ball.init(rl.getMousePosition(), rp.text));
         }
 
         removeOffscreen(&balls);
@@ -175,7 +176,7 @@ pub fn run(rand: std.Random) anyerror!void {
         rl.beginDrawing();
         defer rl.endDrawing();
 
-        rl.clearBackground(c.rosepine.base);
+        rl.clearBackground(rp.base);
 
         for (balls.items) |*single| {
             single.*.draw();

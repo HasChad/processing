@@ -2,6 +2,7 @@ const std = @import("std");
 const rl = @import("raylib");
 const rg = @import("raygui");
 const c = @import("../common.zig");
+const rp = c.rosepine;
 
 const SCALE: u32 = 10;
 const CANVAS_W: u32 = c.SCREEN_WIDTH / SCALE;
@@ -17,7 +18,7 @@ pub fn run() anyerror!void {
 
     var cells: [CANVAS_W * CANVAS_H]u8 = @splat(0);
     var buffer: [CANVAS_W * CANVAS_H]u8 = @splat(0);
-    var pixels: [CANVAS_W * CANVAS_H]rl.Color = @splat(c.rosepine.base);
+    var pixels: [CANVAS_W * CANVAS_H]rl.Color = @splat(rp.base);
 
     const tex = try rl.loadTextureFromImage(rl.genImageColor(CANVAS_W, CANVAS_H, .black));
     defer rl.unloadTexture(tex);
@@ -70,7 +71,7 @@ pub fn run() anyerror!void {
 
         // pixel color update
         for (cells, 0..) |cell, i| {
-            pixels[i] = if (cell != 0) c.rosepine.text else c.rosepine.base;
+            pixels[i] = if (cell != 0) rp.text else rp.base;
         }
 
         // Draw
@@ -93,12 +94,12 @@ pub fn run() anyerror!void {
 fn drawGrid() void {
     for (0..CANVAS_W) |i| {
         const index: i32 = @intCast(i);
-        rl.drawLine(index * SCALE, 0, index * SCALE, c.SCREEN_HEIGHT, c.rosepine.highlight_med);
+        rl.drawLine(index * SCALE, 0, index * SCALE, c.SCREEN_HEIGHT, rp.highlight_med);
     }
 
     for (0..CANVAS_H) |i| {
         const index: i32 = @intCast(i);
-        rl.drawLine(0, index * SCALE, c.SCREEN_WIDTH, index * SCALE, c.rosepine.highlight_med);
+        rl.drawLine(0, index * SCALE, c.SCREEN_WIDTH, index * SCALE, rp.highlight_med);
     }
 }
 

@@ -1,6 +1,7 @@
 const std = @import("std");
 const rl = @import("raylib");
 const c = @import("../common.zig");
+const rp = c.rosepine;
 
 const RAIN_COUNT = 200;
 
@@ -18,17 +19,17 @@ const Drop = struct {
     }
 
     pub fn draw(self: Drop) void {
-        var color = c.rosepine.subtle;
+        var drop_color = rp.subtle;
 
         const alpha_f = (self.vy / 1500.0) * 255;
-        color.a = @intFromFloat(alpha_f);
+        drop_color.a = @intFromFloat(alpha_f);
 
         rl.drawRectangle(
             @intFromFloat(self.x),
             @intFromFloat(self.y),
             @intFromFloat(self.vy / 300),
             @intFromFloat(self.vy / 10),
-            color,
+            drop_color,
         );
     }
 
@@ -57,7 +58,7 @@ pub fn run(rand: std.Random) anyerror!void {
         rl.beginDrawing();
         defer rl.endDrawing();
 
-        rl.clearBackground(c.rosepine.base);
+        rl.clearBackground(rp.base);
 
         for (&rain) |*drop| {
             drop.*.draw();

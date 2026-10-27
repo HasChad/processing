@@ -1,6 +1,7 @@
 const std = @import("std");
 const rl = @import("raylib");
 const c = @import("../common.zig");
+const rp = c.rosepine;
 
 const SCALE: u32 = 5;
 const CANVAS_W: u32 = c.SCREEN_WIDTH / SCALE;
@@ -15,7 +16,7 @@ pub fn run(rand: std.Random) anyerror!void {
     var enable_fire = true;
 
     var cells: [CANVAS_W * CANVAS_H]u8 = @splat(0);
-    var pixels: [CANVAS_W * CANVAS_H]rl.Color = @splat(c.rosepine.base);
+    var pixels: [CANVAS_W * CANVAS_H]rl.Color = @splat(rp.base);
 
     const tex = try rl.loadTextureFromImage(rl.genImageColor(CANVAS_W, CANVAS_H, .black));
     defer rl.unloadTexture(tex);
@@ -48,7 +49,7 @@ pub fn run(rand: std.Random) anyerror!void {
         // Draw
         rl.beginDrawing();
         defer rl.endDrawing();
-        rl.clearBackground(c.rosepine.base);
+        rl.clearBackground(rp.base);
 
         rl.updateTexture(tex, &pixels);
         rl.drawTextureEx(tex, rl.Vector2.init(0, 0), 0, SCALE, .white);

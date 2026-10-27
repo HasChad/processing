@@ -2,6 +2,7 @@ const std = @import("std");
 const rl = @import("raylib");
 const rg = @import("raygui");
 const c = @import("../common.zig");
+const rp = c.rosepine;
 
 const SCALE: u32 = 10;
 const CANVAS_W: u32 = c.SCREEN_WIDTH / SCALE;
@@ -23,7 +24,7 @@ pub fn run(rand: std.Random) anyerror!void {
     var brush = Material.Sand;
     var cells: [CANVAS_W * CANVAS_H]Material = @splat(Material.None);
     var moved: [CANVAS_W * CANVAS_H]bool = @splat(false);
-    var pixels: [CANVAS_W * CANVAS_H]rl.Color = @splat(c.rosepine.base);
+    var pixels: [CANVAS_W * CANVAS_H]rl.Color = @splat(rp.base);
 
     const tex = try rl.loadTextureFromImage(rl.genImageColor(CANVAS_W, CANVAS_H, .black));
     defer rl.unloadTexture(tex);
@@ -76,10 +77,10 @@ pub fn run(rand: std.Random) anyerror!void {
         // pixel color update
         for (cells, 0..) |cell, i| {
             pixels[i] = blk: {
-                if (cell == .Sand) break :blk c.rosepine.gold;
-                if (cell == .Water) break :blk c.rosepine.iris;
-                if (cell == .Stone) break :blk c.rosepine.muted;
-                break :blk c.rosepine.base;
+                if (cell == .Sand) break :blk rp.gold;
+                if (cell == .Water) break :blk rp.iris;
+                if (cell == .Stone) break :blk rp.muted;
+                break :blk rp.base;
             };
         }
 
