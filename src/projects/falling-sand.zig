@@ -15,13 +15,11 @@ const Material = enum {
 };
 
 pub fn run(rand: std.Random) anyerror!void {
-    var draw_grid = false;
-    var left_to_right = true;
-
     const tick_rate: f32 = 60;
     const tick_duration: f32 = 1.0 / tick_rate;
     var tick_acc: f32 = 0;
 
+    var left_to_right = true;
     var brush = Material.Sand;
     var cells: [CANVAS_W * CANVAS_H]Material = @splat(Material.None);
     var moved: [CANVAS_W * CANVAS_H]bool = @splat(false);
@@ -92,25 +90,9 @@ pub fn run(rand: std.Random) anyerror!void {
         rl.updateTexture(tex, &pixels);
         rl.drawTextureEx(tex, rl.Vector2.init(0, 0), 0, SCALE, .white);
 
-        if (draw_grid) {
-            drawGrid();
-        }
-
-        renderUI(&cells, &draw_grid, &brush);
+        renderUI(&cells, &brush);
 
         c.drawFPS();
-    }
-}
-
-fn drawGrid() void {
-    for (0..CANVAS_W) |i| {
-        const index: i32 = @intCast(i);
-        rl.drawLine(index * SCALE, 0, index * SCALE, c.SCREEN_HEIGHT, c.rosepine.highlight_med);
-    }
-
-    for (0..CANVAS_H) |i| {
-        const index: i32 = @intCast(i);
-        rl.drawLine(0, index * SCALE, c.SCREEN_WIDTH, index * SCALE, c.rosepine.highlight_med);
     }
 }
 
@@ -133,6 +115,8 @@ fn cellSimulation(cells: []Material, moved: []bool, left_to_right: *bool, rand: 
                         const below = i + CANVAS_W;
                         const dl = x > 0 and cells[i + CANVAS_W - 1] == .None;
                         const dr = x < CANVAS_W - 1 and cells[i + CANVAS_W + 1] == .None;
+                        const l = x > 0 and cells[i - 1] == .None;
+                        const r = x < CANVAS_W - 1 and cells[i + 1] == .None;
 
                         if (cells[below] == .None) {
                             cells[i] = .None;
@@ -143,16 +127,16 @@ fn cellSimulation(cells: []Material, moved: []bool, left_to_right: *bool, rand: 
                             cells[i + CANVAS_W] = .Sand;
                             moved[i] = true;
                             moved[i + CANVAS_W] = true;
-                        } else if (dl and dr) {
+                        } else if (dl and dr and l and r) {
                             const target = if (rand.boolean()) i + CANVAS_W - 1 else i + CANVAS_W + 1;
                             cells[i] = .None;
                             cells[target] = .Sand;
                             moved[target] = true;
-                        } else if (dl) {
+                        } else if (dl and l) {
                             cells[i] = .None;
                             cells[i + CANVAS_W - 1] = .Sand;
                             moved[i + CANVAS_W - 1] = true;
-                        } else if (dr) {
+                        } else if (dr and r) {
                             cells[i] = .None;
                             cells[i + CANVAS_W + 1] = .Sand;
                             moved[i + CANVAS_W + 1] = true;
@@ -172,16 +156,16 @@ fn cellSimulation(cells: []Material, moved: []bool, left_to_right: *bool, rand: 
                             cells[i] = .None;
                             cells[i + CANVAS_W] = .Water;
                             moved[i + CANVAS_W] = true;
-                        } else if (dl and dr) {
+                        } else if (dl and dr and l and r) {
                             const target = if (rand.boolean()) i + CANVAS_W - 1 else i + CANVAS_W + 1;
                             cells[i] = .None;
                             cells[target] = .Water;
                             moved[target] = true;
-                        } else if (dl) {
+                        } else if (dl and l) {
                             cells[i] = .None;
                             cells[i + CANVAS_W - 1] = .Water;
                             moved[i + CANVAS_W - 1] = true;
-                        } else if (dr) {
+                        } else if (dr and r) {
                             cells[i] = .None;
                             cells[i + CANVAS_W + 1] = .Water;
                             moved[i + CANVAS_W + 1] = true;
@@ -219,27 +203,16 @@ fn cellSimulation(cells: []Material, moved: []bool, left_to_right: *bool, rand: 
     left_to_right.* = !left_to_right.*;
 }
 
-fn renderUI(cells: []Material, draw_grid: *bool, brush: *Material) void {
+fn renderUI(cells: []Material, brush: *Material) void {
     if (rg.button(.init(10, c.SCREEN_HEIGHT - 40, 30, 30), "#28#"))
         @memset(cells, Material.None);
 
-    if (rg.button(.init(50, c.SCREEN_HEIGHT - 40, 30, 30), "#97#")) {
-        switch (draw_grid.*) {
-            true => {
-                draw_grid.* = false;
-            },
-            false => {
-                draw_grid.* = true;
-            },
-        }
-    }
-
-    if (rg.button(.init(90, c.SCREEN_HEIGHT - 40, 30, 30), "Sa"))
+    if (rg.button(.init(50, c.SCREEN_HEIGHT - 40, 30, 30), "Sa"))
         brush.* = .Sand;
 
-    if (rg.button(.init(130, c.SCREEN_HEIGHT - 40, 30, 30), "Wa"))
+    if (rg.button(.init(90, c.SCREEN_HEIGHT - 40, 30, 30), "Wa"))
         brush.* = .Water;
 
-    if (rg.button(.init(170, c.SCREEN_HEIGHT - 40, 30, 30), "St"))
+    if (rg.button(.init(130, c.SCREEN_HEIGHT - 40, 30, 30), "St"))
         brush.* = .Stone;
 }
