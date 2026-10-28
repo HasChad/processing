@@ -154,7 +154,7 @@ pub fn run(rand: std.Random) anyerror!void {
             const vec = dir.scale(speed);
 
             try balls.append(allocator, Ball.initSpeed(
-                rl.Vector2.init(c.SCREEN_WIDTH / 2, 50),
+                rl.Vector2.init(c.SCREEN_W / 2, 50),
                 vec,
                 c.getRainbow(shooter_time),
                 rand,
@@ -243,10 +243,10 @@ fn removeOffscreen(balls: *std.ArrayList(Ball)) void {
     var i: usize = balls.items.len;
     while (i > 0) : (i -= 1) {
         const b = balls.items[i - 1];
-        if (b.current_pos.y > c.SCREEN_HEIGHT + 100 or
+        if (b.current_pos.y > c.SCREEN_H + 100 or
             b.current_pos.y < -100 or
             b.current_pos.x < -100 or
-            b.current_pos.x > c.SCREEN_WIDTH + 100)
+            b.current_pos.x > c.SCREEN_W + 100)
         {
             _ = balls.swapRemove(i - 1);
         }

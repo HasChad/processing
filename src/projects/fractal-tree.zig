@@ -8,8 +8,8 @@ const LEN_MUL = 0.82;
 
 pub fn run() anyerror!void {
     const origin = rl.Vector2{
-        .x = c.SCREEN_WIDTH / 2,
-        .y = c.SCREEN_HEIGHT,
+        .x = c.SCREEN_W / 2,
+        .y = c.SCREEN_H,
     };
     const rot: f32 = 0;
     var add_rot: f32 = 30;
@@ -52,7 +52,7 @@ fn renderUI(add_rot: *f32, count: *i32) void {
     _ = rg.sliderBar(
         rl.Rectangle{
             .x = 50,
-            .y = c.SCREEN_HEIGHT - 50,
+            .y = c.SCREEN_H - 50,
             .width = 100,
             .height = 20,
         },
@@ -69,7 +69,7 @@ fn renderUI(add_rot: *f32, count: *i32) void {
     _ = rg.sliderBar(
         rl.Rectangle{
             .x = 50,
-            .y = c.SCREEN_HEIGHT - 25,
+            .y = c.SCREEN_H - 25,
             .width = 100,
             .height = 20,
         },

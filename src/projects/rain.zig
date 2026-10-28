@@ -12,7 +12,7 @@ const Drop = struct {
 
     pub fn init(rand: std.Random) Drop {
         return Drop{
-            .x = rand.float(f32) * c.SCREEN_WIDTH,
+            .x = rand.float(f32) * c.SCREEN_W,
             .y = rand.float(f32) * 500 - 700,
             .vy = rand.float(f32) * 1000 + 500,
         };
@@ -36,7 +36,7 @@ const Drop = struct {
     pub fn move(self: *Drop, rand: std.Random) void {
         self.y += self.vy * rl.getFrameTime();
 
-        if (self.y > c.SCREEN_HEIGHT) {
+        if (self.y > c.SCREEN_H) {
             self.* = Drop.init(rand);
         }
     }

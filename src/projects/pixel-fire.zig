@@ -4,8 +4,8 @@ const c = @import("../common.zig");
 const rp = c.rosepine;
 
 const SCALE: u32 = 5;
-const CANVAS_W: u32 = c.SCREEN_WIDTH / SCALE;
-const CANVAS_H: u32 = c.SCREEN_HEIGHT / SCALE;
+const CANVAS_W: u32 = c.SCREEN_W / SCALE;
+const CANVAS_H: u32 = c.SCREEN_H / SCALE;
 const MAX_HEAT: u8 = 35;
 
 pub fn run(rand: std.Random) anyerror!void {

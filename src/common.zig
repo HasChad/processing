@@ -2,8 +2,8 @@ const std = @import("std");
 const rl = @import("raylib");
 const rg = @import("raygui");
 
-pub const SCREEN_WIDTH = 800;
-pub const SCREEN_HEIGHT = 600;
+pub const SCREEN_W = 800;
+pub const SCREEN_H = 600;
 
 pub const rosepine = struct {
     pub const base = rl.Color.init(25, 23, 36, 255);

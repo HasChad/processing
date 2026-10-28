@@ -16,8 +16,8 @@ const Wall = struct {
     pub fn init(rand: std.Random) Wall {
         return Wall{
             .pos = rl.Vector2{
-                .x = rand.float(f32) * c.SCREEN_WIDTH,
-                .y = rand.float(f32) * c.SCREEN_HEIGHT,
+                .x = rand.float(f32) * c.SCREEN_W,
+                .y = rand.float(f32) * c.SCREEN_H,
             },
         };
     }
@@ -45,8 +45,8 @@ const Boid = struct {
         return Boid{
             .id = @intCast(id),
             .pos = rl.Vector2{
-                .x = rand.float(f32) * c.SCREEN_WIDTH,
-                .y = rand.float(f32) * c.SCREEN_HEIGHT,
+                .x = rand.float(f32) * c.SCREEN_W,
+                .y = rand.float(f32) * c.SCREEN_H,
             },
             .vel = vel,
             .accel = rl.Vector2.zero(),
@@ -197,16 +197,16 @@ const Boid = struct {
 
         self.accel = rl.Vector2.zero();
 
-        if (self.pos.x > c.SCREEN_WIDTH) {
+        if (self.pos.x > c.SCREEN_W) {
             self.pos.x = 0;
         } else if (self.pos.x < 0) {
-            self.pos.x = c.SCREEN_WIDTH;
+            self.pos.x = c.SCREEN_W;
         }
 
-        if (self.pos.y > c.SCREEN_HEIGHT) {
+        if (self.pos.y > c.SCREEN_H) {
             self.pos.y = 0;
         } else if (self.pos.y < 0) {
-            self.pos.y = c.SCREEN_HEIGHT;
+            self.pos.y = c.SCREEN_H;
         }
     }
 

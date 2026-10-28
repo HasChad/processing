@@ -5,8 +5,12 @@ const c = @import("../common.zig");
 const rp = c.rosepine;
 
 const SCALE: u32 = 10;
-const CANVAS_W: u32 = c.SCREEN_WIDTH / SCALE;
-const CANVAS_H: u32 = c.SCREEN_HEIGHT / SCALE;
+const CANVAS_W: u32 = c.SCREEN_W / SCALE;
+const CANVAS_H: u32 = c.SCREEN_H / SCALE;
+
+const TOOLBAR_W: f32 = 170;
+const TOOLBAR_H = 50;
+const TOOLBAR = rl.Rectangle.init(0, c.SCREEN_H - TOOLBAR_H, TOOLBAR_W, TOOLBAR_H);
 
 const Material = enum {
     None,
@@ -31,14 +35,11 @@ pub fn run(rand: std.Random) anyerror!void {
 
     while (!rl.windowShouldClose() and !rl.isKeyPressed(.escape)) {
         const m_pos = rl.getMousePosition();
+        const in_canvas = m_pos.x > 0 and m_pos.x < c.SCREEN_W and m_pos.y > 0 and m_pos.y < c.SCREEN_H;
+        const can_draw = in_canvas and !rl.checkCollisionPointRec(m_pos, TOOLBAR);
 
         // draw with mouse
-        if (rl.isMouseButtonDown(rl.MouseButton.left) and
-            m_pos.x < c.SCREEN_WIDTH and
-            m_pos.x > 0 and
-            m_pos.y < c.SCREEN_HEIGHT and
-            m_pos.y > 0)
-        {
+        if (rl.isMouseButtonDown(rl.MouseButton.left) and can_draw) {
             const x: usize = @trunc(m_pos.x / SCALE);
             const y: usize = @trunc(m_pos.y / SCALE);
 
@@ -49,19 +50,14 @@ pub fn run(rand: std.Random) anyerror!void {
         }
 
         // erase
-        if (rl.isMouseButtonDown(rl.MouseButton.right) and
-            m_pos.x < c.SCREEN_WIDTH and
-            m_pos.x > 0 and
-            m_pos.y < c.SCREEN_HEIGHT and
-            m_pos.y > 0)
-        {
+        if (rl.isMouseButtonDown(rl.MouseButton.right) and can_draw) {
             const x: usize = @trunc(m_pos.x / SCALE);
             const y: usize = @trunc(m_pos.y / SCALE);
 
             const i = y * CANVAS_W + x;
 
             if (cells[i] != .None)
-                cells[i] = Material.None;
+                cells[i] = .None;
         }
 
         // simulation
@@ -205,15 +201,17 @@ fn cellSimulation(cells: []Material, moved: []bool, left_to_right: *bool, rand: 
 }
 
 fn renderUI(cells: []Material, brush: *Material) void {
-    if (rg.button(.init(10, c.SCREEN_HEIGHT - 40, 30, 30), "#28#"))
+    rl.drawRectangleRec(TOOLBAR, rp.highlight_med);
+
+    if (rg.button(.init(10, c.SCREEN_H - 40, 30, 30), "#28#"))
         @memset(cells, Material.None);
 
-    if (rg.button(.init(50, c.SCREEN_HEIGHT - 40, 30, 30), "Sa"))
+    if (rg.button(.init(50, c.SCREEN_H - 40, 30, 30), "Sa"))
         brush.* = .Sand;
 
-    if (rg.button(.init(90, c.SCREEN_HEIGHT - 40, 30, 30), "Wa"))
+    if (rg.button(.init(90, c.SCREEN_H - 40, 30, 30), "Wa"))
         brush.* = .Water;
 
-    if (rg.button(.init(130, c.SCREEN_HEIGHT - 40, 30, 30), "St"))
+    if (rg.button(.init(130, c.SCREEN_H - 40, 30, 30), "St"))
         brush.* = .Stone;
 }

@@ -83,8 +83,8 @@ pub fn run(rand: std.Random) anyerror!void {
     var balls = try std.ArrayList(Ball).initCapacity(allocator, 100);
 
     const position = rl.Vector2{
-        .x = c.SCREEN_WIDTH / 2,
-        .y = c.SCREEN_HEIGHT / 2,
+        .x = c.SCREEN_W / 2,
+        .y = c.SCREEN_H / 2,
     };
     const radius = 300.0;
 
@@ -105,7 +105,7 @@ pub fn run(rand: std.Random) anyerror!void {
             const vec = dir.scale(speed);
 
             try balls.append(allocator, Ball.initSpeed(
-                rl.Vector2.init(c.SCREEN_WIDTH / 2, 50),
+                rl.Vector2.init(c.SCREEN_W / 2, 50),
                 vec,
                 c.getRainbow(shooter_time),
                 rand,
@@ -141,8 +141,8 @@ pub fn run(rand: std.Random) anyerror!void {
 
 fn update(balls: []Ball, dt: f32) void {
     const position = rl.Vector2{
-        .x = c.SCREEN_WIDTH / 2,
-        .y = c.SCREEN_HEIGHT / 2,
+        .x = c.SCREEN_W / 2,
+        .y = c.SCREEN_H / 2,
     };
     const radius = 300.0;
 
