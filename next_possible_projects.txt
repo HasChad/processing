@@ -1,5 +1,4 @@
 - Raycasting (Wolfenstein style)
-- Wireworld
 - Mandelbrot/Julia zoomer
 - Metaballs
 - Reaction-diffusion (Gray-Scott)
