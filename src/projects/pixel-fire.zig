@@ -54,7 +54,9 @@ pub fn run(rand: std.Random) anyerror!void {
         rl.updateTexture(tex, &pixels);
         rl.drawTextureEx(tex, rl.Vector2.init(0, 0), 0, SCALE, .white);
 
-        c.drawFPS();
+        if (c.drawFPS()) {
+            return;
+        }
     }
 }
 

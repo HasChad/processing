@@ -24,7 +24,9 @@ pub fn run() anyerror!void {
         drawBranch(origin, 100, count, rot, add_rot);
         renderUI(&add_rot, &count);
 
-        c.drawFPS();
+        if (c.drawFPS()) {
+            return;
+        }
     }
 }
 

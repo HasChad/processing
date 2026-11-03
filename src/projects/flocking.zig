@@ -264,6 +264,8 @@ pub fn run(rand: std.Random) anyerror!void {
             wall.*.draw();
         }
 
-        c.drawFPS();
+        if (c.drawFPS()) {
+            return;
+        }
     }
 }

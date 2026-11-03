@@ -120,7 +120,9 @@ pub fn run() anyerror!void {
 
         renderUI(&play_sim, &step, &cells, &draw_grid, &tick_rate);
 
-        c.drawFPS();
+        if (c.drawFPS()) {
+            return;
+        }
     }
 }
 

@@ -89,7 +89,9 @@ pub fn run(rand: std.Random) anyerror!void {
 
         renderUI(&cells, &brush);
 
-        c.drawFPS();
+        if (c.drawFPS()) {
+            return;
+        }
     }
 }
 

@@ -36,8 +36,14 @@ pub fn getRainbow(dt: f32) rl.Color {
     );
 }
 
-pub fn drawFPS() void {
-    rl.drawText(rl.textFormat("%i FPS", .{rl.getFPS()}), 5, 5, 20, rosepine.iris);
+pub fn drawFPS() bool {
+    rl.drawText(rl.textFormat("%i FPS", .{rl.getFPS()}), SCREEN_W - 80, 5, 20, rosepine.iris);
+
+    if (rg.button(.init(5, 5, 120, 30), "Back to Menu")) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 pub fn colorButton(bounds: rl.Rectangle, text: [:0]const u8, color: rl.Color) bool {

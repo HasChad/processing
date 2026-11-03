@@ -1,6 +1,5 @@
 - Raycasting (Wolfenstein style)
 - Mandelbrot/Julia zoomer
 - Metaballs
-- Reaction-diffusion (Gray-Scott)
 - Cloth simulation
 - Maze generation and pathfinding

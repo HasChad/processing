@@ -64,6 +64,8 @@ pub fn run(rand: std.Random) anyerror!void {
             drop.*.draw();
         }
 
-        c.drawFPS();
+        if (c.drawFPS()) {
+            return;
+        }
     }
 }

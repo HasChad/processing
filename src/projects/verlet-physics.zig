@@ -134,7 +134,9 @@ pub fn run(rand: std.Random) anyerror!void {
             single.*.draw();
         }
 
-        c.drawFPS();
+        if (c.drawFPS()) {
+            return;
+        }
         rl.drawText(rl.textFormat("BALLS: %i", .{balls.items.len}), 5, 25, 20, .white);
     }
 }

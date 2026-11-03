@@ -12,6 +12,7 @@ const gol_sketch = @import("projects/game-of-life.zig");
 const pixel_fire_sketch = @import("projects/pixel-fire.zig");
 const falling_sand_sketch = @import("projects/falling-sand.zig");
 const wireworld_sketch = @import("projects/wireworld.zig");
+const reaction_diffusion_sketch = @import("projects/reaction-diffusion.zig");
 
 const Project = enum {
     MainMenu,
@@ -24,6 +25,7 @@ const Project = enum {
     PixelFire,
     FallingSand,
     Wireworld,
+    ReactionDiffusion,
     Quit,
 };
 
@@ -82,6 +84,10 @@ pub fn main(init: std.process.Init) anyerror!void {
                 try wireworld_sketch.run();
                 current_project = .MainMenu;
             },
+            .ReactionDiffusion => {
+                try reaction_diffusion_sketch.run(rand);
+                current_project = .MainMenu;
+            },
             .Quit => {
                 break;
             },
@@ -131,6 +137,9 @@ fn mainMenu(current_project: *Project) void {
 
     if (rg.button(.init(c.SCREEN_W / 2 - 60, 420, 120, 30), "Wireworld"))
         current_project.* = .Wireworld;
+
+    if (rg.button(.init(c.SCREEN_W / 2 - 60, 460, 120, 30), "Reaction Diffusion"))
+        current_project.* = .ReactionDiffusion;
 
     if (c.colorButton(.init(c.SCREEN_W / 2 - 60, c.SCREEN_H - 40, 120, 30), "Quit", c.rosepine.love))
         current_project.* = .Quit;
