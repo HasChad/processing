@@ -21,7 +21,7 @@ pub fn run(rand: std.Random) anyerror!void {
     const tex = try rl.loadTextureFromImage(rl.genImageColor(CANVAS_W, CANVAS_H, .black));
     defer rl.unloadTexture(tex);
 
-    while (!rl.windowShouldClose() and !rl.isKeyPressed(.escape)) {
+    while (!rl.windowShouldClose() and !rl.isKeyPressed(.q)) {
         if (rl.isKeyPressed(rl.KeyboardKey.space)) {
             switch (enable_fire) {
                 true => enable_fire = false,
@@ -54,9 +54,7 @@ pub fn run(rand: std.Random) anyerror!void {
         rl.updateTexture(tex, &pixels);
         rl.drawTextureEx(tex, rl.Vector2.init(0, 0), 0, SCALE, .white);
 
-        if (c.drawFPS()) {
-            return;
-        }
+        c.drawFPS();
     }
 }
 

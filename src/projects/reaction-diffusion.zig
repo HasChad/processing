@@ -5,14 +5,12 @@ const rp = c.rosepine;
 
 pub fn run(rand: std.Random) anyerror!void {
     _ = rand; // autofix
-    while (!rl.windowShouldClose() and !rl.isKeyPressed(.escape)) {
+    while (!rl.windowShouldClose() and !rl.isKeyPressed(.q)) {
         // Draw
         rl.beginDrawing();
         defer rl.endDrawing();
         rl.clearBackground(rp.base);
 
-        if (c.drawFPS()) {
-            return;
-        }
+        c.drawFPS();
     }
 }

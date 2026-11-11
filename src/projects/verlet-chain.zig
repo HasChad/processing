@@ -137,7 +137,7 @@ pub fn run(rand: std.Random) anyerror!void {
         });
     }
 
-    while (!rl.windowShouldClose() and !rl.isKeyPressed(.escape)) {
+    while (!rl.windowShouldClose() and !rl.isKeyPressed(.q)) {
         if (rl.isKeyPressed(rl.KeyboardKey.space)) {
             enableShooter = !enableShooter;
         }
@@ -182,9 +182,7 @@ pub fn run(rand: std.Random) anyerror!void {
             single.*.draw();
         }
 
-        if (c.drawFPS()) {
-            return;
-        }
+        c.drawFPS();
         rl.drawText(rl.textFormat("BALLS: %i", .{balls.items.len}), 5, 25, 20, .white);
     }
 }

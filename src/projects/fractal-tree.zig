@@ -15,7 +15,7 @@ pub fn run() anyerror!void {
     var add_rot: f32 = 30;
     var count: i32 = 12;
 
-    while (!rl.windowShouldClose() and !rl.isKeyPressed(.escape)) {
+    while (!rl.windowShouldClose() and !rl.isKeyPressed(.q)) {
         rl.beginDrawing();
         defer rl.endDrawing();
 
@@ -24,9 +24,7 @@ pub fn run() anyerror!void {
         drawBranch(origin, 100, count, rot, add_rot);
         renderUI(&add_rot, &count);
 
-        if (c.drawFPS()) {
-            return;
-        }
+        c.drawFPS();
     }
 }
 

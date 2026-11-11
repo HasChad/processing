@@ -33,7 +33,7 @@ pub fn run(rand: std.Random) anyerror!void {
     const tex = try rl.loadTextureFromImage(rl.genImageColor(CANVAS_W, CANVAS_H, .black));
     defer rl.unloadTexture(tex);
 
-    while (!rl.windowShouldClose() and !rl.isKeyPressed(.escape)) {
+    while (!rl.windowShouldClose() and !rl.isKeyPressed(.q)) {
         const m_pos = rl.getMousePosition();
         const in_canvas = m_pos.x > 0 and m_pos.x < c.SCREEN_W and m_pos.y > 0 and m_pos.y < c.SCREEN_H;
         const can_draw = in_canvas and !rl.checkCollisionPointRec(m_pos, TOOLBAR);
@@ -89,9 +89,7 @@ pub fn run(rand: std.Random) anyerror!void {
 
         renderUI(&cells, &brush);
 
-        if (c.drawFPS()) {
-            return;
-        }
+        c.drawFPS();
     }
 }
 

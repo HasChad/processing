@@ -49,7 +49,7 @@ pub fn run(rand: std.Random) anyerror!void {
         drop.* = Drop.init(rand);
     }
 
-    while (!rl.windowShouldClose() and !rl.isKeyPressed(.escape)) {
+    while (!rl.windowShouldClose() and !rl.isKeyPressed(.q)) {
         for (&rain) |*drop| {
             drop.*.move(rand);
         }
@@ -64,8 +64,6 @@ pub fn run(rand: std.Random) anyerror!void {
             drop.*.draw();
         }
 
-        if (c.drawFPS()) {
-            return;
-        }
+        c.drawFPS();
     }
 }

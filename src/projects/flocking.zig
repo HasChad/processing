@@ -245,7 +245,7 @@ pub fn run(rand: std.Random) anyerror!void {
         wall.* = Wall.init(rand);
     }
 
-    while (!rl.windowShouldClose() and !rl.isKeyPressed(.escape)) {
+    while (!rl.windowShouldClose() and !rl.isKeyPressed(.q)) {
         rl.beginDrawing();
         defer rl.endDrawing();
         rl.clearBackground(rp.base);
@@ -264,8 +264,6 @@ pub fn run(rand: std.Random) anyerror!void {
             wall.*.draw();
         }
 
-        if (c.drawFPS()) {
-            return;
-        }
+        c.drawFPS();
     }
 }
